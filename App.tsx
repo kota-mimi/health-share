@@ -25,57 +25,6 @@ const MOCK_DATA: DailyLogData = {
   achievementRate: 88,
 };
 
-// URLパラメータからユーザーデータを取得する関数
-const getDataFromURL = (): DailyLogData => {
-  try {
-    const urlParams = new URLSearchParams(window.location.search);
-    const dataParam = urlParams.get('data');
-    
-    if (dataParam) {
-      const decodedData = JSON.parse(decodeURIComponent(dataParam));
-      console.log('📊 Received user data:', decodedData);
-      
-      // useShareRecord.tsの形式に合わせてデータを変換
-      return {
-        date: new Date(decodedData.date || new Date()),
-        weight: {
-          current: decodedData.weight || 0, // useShareRecordから送られる形式
-          diff: 0, // 一旦固定値（後で改善可能）
-        },
-        calories: {
-          current: decodedData.calories || 0, // 実際の摂取カロリー
-          target: 2100, // 固定の目標値（後で改善可能）
-        },
-        pfc: {
-          p: { 
-            current: decodedData.protein || 0, // 実際の摂取量
-            target: 160, // 固定の目標値
-            unit: 'g' 
-          },
-          f: { 
-            current: decodedData.fat || 0, // 実際の摂取量
-            target: 65, // 固定の目標値
-            unit: 'g' 
-          },
-          c: { 
-            current: decodedData.carbs || 0, // 実際の摂取量
-            target: 240, // 固定の目標値
-            unit: 'g' 
-          },
-        },
-        exercise: {
-          minutes: decodedData.exerciseTime || 0, // useShareRecordの形式
-          caloriesBurned: decodedData.exerciseBurned || 0, // useShareRecordの形式
-        },
-        achievementRate: decodedData.achievementRate || 0,
-      };
-    }
-  } catch (error) {
-    console.error('❌ Error parsing URL data, using mock data:', error);
-  }
-  
-  return MOCK_DATA;
-};
 
 const BACKGROUNDS = [
   { name: 'Dark', class: 'bg-zinc-950', isDark: true },
@@ -157,7 +106,53 @@ const UI_TEXT = {
 };
 
 const App: React.FC = () => {
-  const [data, setData] = useState<DailyLogData>(getDataFromURL());
+  const [data, setData] = useState<DailyLogData>(MOCK_DATA);
+  
+  // ブラウザ環境でURLパラメータからデータを読み込み
+  useEffect(() => {
+    const loadUserData = () => {
+      try {
+        if (typeof window === 'undefined') return;
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const dataParam = urlParams.get('data');
+        
+        if (dataParam) {
+          const decodedData = JSON.parse(decodeURIComponent(dataParam));
+          console.log('📊 Received user data:', decodedData);
+          
+          // useShareRecord.tsの形式に合わせてデータを変換
+          const userData: DailyLogData = {
+            date: new Date(decodedData.date || new Date()),
+            weight: {
+              current: decodedData.weight || 0,
+              diff: 0,
+            },
+            calories: {
+              current: decodedData.calories || 0,
+              target: 2100,
+            },
+            pfc: {
+              p: { current: decodedData.protein || 0, target: 160, unit: 'g' },
+              f: { current: decodedData.fat || 0, target: 65, unit: 'g' },
+              c: { current: decodedData.carbs || 0, target: 240, unit: 'g' },
+            },
+            exercise: {
+              minutes: decodedData.exerciseTime || 0,
+              caloriesBurned: decodedData.exerciseBurned || 0,
+            },
+            achievementRate: decodedData.achievementRate || 0,
+          };
+          
+          setData(userData);
+        }
+      } catch (error) {
+        console.error('❌ Error parsing URL data:', error);
+      }
+    };
+    
+    loadUserData();
+  }, []);
   const [theme, setTheme] = useState<ThemeColor>(ThemeColor.EMERALD);
   const [bgIndex, setBgIndex] = useState(0);
   const [isJapanese, setIsJapanese] = useState(true);
