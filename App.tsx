@@ -153,7 +153,7 @@ const App: React.FC = () => {
     
     loadUserData();
   }, []);
-  const [theme, setTheme] = useState<ThemeColor>(ThemeColor.EMERALD);
+  const [theme, setTheme] = useState<ThemeColor>('text-emerald-400' as ThemeColor);
   const [bgIndex, setBgIndex] = useState(0);
   const [isJapanese, setIsJapanese] = useState(true);
   const [numericDate, setNumericDate] = useState(false);
