@@ -25,6 +25,58 @@ const MOCK_DATA: DailyLogData = {
   achievementRate: 88,
 };
 
+// URLパラメータからユーザーデータを取得する関数
+const getDataFromURL = (): DailyLogData => {
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const dataParam = urlParams.get('data');
+    
+    if (dataParam) {
+      const decodedData = JSON.parse(decodeURIComponent(dataParam));
+      console.log('📊 Received user data:', decodedData);
+      
+      // データ形式を共有ページ用に変換
+      return {
+        date: new Date(decodedData.date || new Date()),
+        weight: {
+          current: decodedData.weight?.current || decodedData.currentWeight || 0,
+          diff: decodedData.weight?.diff || decodedData.weightDiff || 0,
+        },
+        calories: {
+          current: decodedData.calories?.consumed || decodedData.totalCalories || 0,
+          target: decodedData.calories?.target || decodedData.targetCalories || 2000,
+        },
+        pfc: {
+          p: { 
+            current: decodedData.pfc?.protein || decodedData.protein || 0, 
+            target: decodedData.targetPfc?.protein || 100, 
+            unit: 'g' 
+          },
+          f: { 
+            current: decodedData.pfc?.fat || decodedData.fat || 0, 
+            target: decodedData.targetPfc?.fat || 60, 
+            unit: 'g' 
+          },
+          c: { 
+            current: decodedData.pfc?.carbs || decodedData.carbs || 0, 
+            target: decodedData.targetPfc?.carbs || 250, 
+            unit: 'g' 
+          },
+        },
+        exercise: {
+          minutes: decodedData.exercise?.minutes || decodedData.exerciseMinutes || 0,
+          caloriesBurned: decodedData.exercise?.caloriesBurned || decodedData.exerciseCalories || 0,
+        },
+        achievementRate: decodedData.achievementRate || 0,
+      };
+    }
+  } catch (error) {
+    console.error('❌ Error parsing URL data, using mock data:', error);
+  }
+  
+  return MOCK_DATA;
+};
+
 const BACKGROUNDS = [
   { name: 'Dark', class: 'bg-zinc-950', isDark: true },
   { name: 'Light', class: 'bg-white', isDark: false },
@@ -105,7 +157,7 @@ const UI_TEXT = {
 };
 
 const App: React.FC = () => {
-  const [data, setData] = useState<DailyLogData>(MOCK_DATA);
+  const [data, setData] = useState<DailyLogData>(getDataFromURL());
   const [theme, setTheme] = useState<ThemeColor>(ThemeColor.EMERALD);
   const [bgIndex, setBgIndex] = useState(0);
   const [isJapanese, setIsJapanese] = useState(true);
