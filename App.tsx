@@ -35,37 +35,37 @@ const getDataFromURL = (): DailyLogData => {
       const decodedData = JSON.parse(decodeURIComponent(dataParam));
       console.log('📊 Received user data:', decodedData);
       
-      // データ形式を共有ページ用に変換
+      // useShareRecord.tsの形式に合わせてデータを変換
       return {
         date: new Date(decodedData.date || new Date()),
         weight: {
-          current: decodedData.weight?.current || decodedData.currentWeight || 0,
-          diff: decodedData.weight?.diff || decodedData.weightDiff || 0,
+          current: decodedData.weight || 0, // useShareRecordから送られる形式
+          diff: 0, // 一旦固定値（後で改善可能）
         },
         calories: {
-          current: decodedData.calories?.consumed || decodedData.totalCalories || 0,
-          target: decodedData.calories?.target || decodedData.targetCalories || 2000,
+          current: decodedData.calories || 0, // 実際の摂取カロリー
+          target: 2100, // 固定の目標値（後で改善可能）
         },
         pfc: {
           p: { 
-            current: decodedData.pfc?.protein || decodedData.protein || 0, 
-            target: decodedData.targetPfc?.protein || 100, 
+            current: decodedData.protein || 0, // 実際の摂取量
+            target: 160, // 固定の目標値
             unit: 'g' 
           },
           f: { 
-            current: decodedData.pfc?.fat || decodedData.fat || 0, 
-            target: decodedData.targetPfc?.fat || 60, 
+            current: decodedData.fat || 0, // 実際の摂取量
+            target: 65, // 固定の目標値
             unit: 'g' 
           },
           c: { 
-            current: decodedData.pfc?.carbs || decodedData.carbs || 0, 
-            target: decodedData.targetPfc?.carbs || 250, 
+            current: decodedData.carbs || 0, // 実際の摂取量
+            target: 240, // 固定の目標値
             unit: 'g' 
           },
         },
         exercise: {
-          minutes: decodedData.exercise?.minutes || decodedData.exerciseMinutes || 0,
-          caloriesBurned: decodedData.exercise?.caloriesBurned || decodedData.exerciseCalories || 0,
+          minutes: decodedData.exerciseTime || 0, // useShareRecordの形式
+          caloriesBurned: decodedData.exerciseBurned || 0, // useShareRecordの形式
         },
         achievementRate: decodedData.achievementRate || 0,
       };
