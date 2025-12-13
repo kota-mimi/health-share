@@ -287,47 +287,30 @@ const App: React.FC = () => {
   };
 
   const handleWheel = (e: React.WheelEvent) => {
-    // Always allow wheel zoom and auto-enter edit mode
+    // ホイールでも即座に編集モード & 自由ズーム
     if (interactionMode === 'view') {
       enterEditMode();
     }
     
     e.preventDefault();
-    const delta = -e.deltaY * 0.001; // Smooth, precise control
-    const newScale = Math.min(2.5, Math.max(0.5, globalScale + delta)); // Professional range
+    const delta = -e.deltaY * 0.002; // より敏感な操作感
+    const newScale = Math.min(5, Math.max(0.2, globalScale + delta)); // 指操作と同じ範囲
     setGlobalScale(newScale);
     setLastInteraction(Date.now());
   };
 
-  // Professional-grade touch interaction system
+  // 指でつまんで自由操作システム（写真アプリ風）
   const handleTouchStart = (e: React.TouchEvent) => {
+    // 常に編集モードに - 指タッチで即座に操作開始
+    if (interactionMode === 'view') {
+      enterEditMode();
+    }
+    
     const touch = e.touches[0];
     touchStartPos.current = { x: touch.clientX, y: touch.clientY };
     
-    if (e.touches.length === 1) {
-      // Single tap - potential mode switch
-      const now = Date.now();
-      const isQuickTap = now - lastTap.current < 300;
-      
-      if (isQuickTap) {
-        // Double tap detected - smart mode switching
-        if (interactionMode === 'view') {
-          enterEditMode();
-        } else {
-          exitEditMode();
-        }
-        // Reset scale and position on double tap
-        setGlobalScale(1);
-        setLayoutConfig(INITIAL_LAYOUT);
-      }
-      
-      lastTap.current = now;
-    } else if (e.touches.length === 2) {
-      // Pinch zoom - enter edit mode automatically
-      if (interactionMode === 'view') {
-        enterEditMode();
-      }
-      
+    if (e.touches.length === 2) {
+      // 2本指ピンチ - リアルタイムズーム
       e.preventDefault();
       const dist = Math.hypot(
         e.touches[0].clientX - e.touches[1].clientX,
@@ -336,11 +319,20 @@ const App: React.FC = () => {
       touchStartDist.current = dist;
       startScale.current = globalScale;
     }
+    
+    // ダブルタップでリセット
+    const now = Date.now();
+    const isQuickTap = now - lastTap.current < 300;
+    if (isQuickTap && e.touches.length === 1) {
+      setGlobalScale(1);
+      setLayoutConfig(INITIAL_LAYOUT);
+    }
+    lastTap.current = now;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (e.touches.length === 2 && touchStartDist.current !== null) {
-      e.preventDefault(); // Prevent page scroll and bounce
+      e.preventDefault(); // ページスクロール防止
       
       const dist = Math.hypot(
         e.touches[0].clientX - e.touches[1].clientX,
@@ -348,9 +340,9 @@ const App: React.FC = () => {
       );
       
       const scaleFactor = dist / touchStartDist.current;
-      // Professional scaling with smooth curves
+      // スマホアプリ風スムーズスケーリング - 超広範囲対応
       const rawScale = startScale.current * scaleFactor;
-      const newScale = Math.min(2.5, Math.max(0.5, rawScale));
+      const newScale = Math.min(5, Math.max(0.2, rawScale)); // 0.2倍～5倍まで自由
       
       setGlobalScale(newScale);
       setLastInteraction(Date.now());
