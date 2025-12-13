@@ -215,14 +215,15 @@ const App: React.FC = () => {
   // Customization State
   const [customImage, setCustomImage] = useState<string | null>(null);
   const [overlayOpacity, setOverlayOpacity] = useState(0.7);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(true); // Always in edit mode
   const [layoutConfig, setLayoutConfig] = useState<LayoutConfig>(INITIAL_LAYOUT);
   const [globalScale, setGlobalScale] = useState(1);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // Touch state for pinch zoom
+  // Touch state for pinch zoom and double tap
   const touchStartDist = useRef<number | null>(null);
   const startScale = useRef<number>(1);
+  const lastTap = useRef<number>(0);
 
 
   const handleThemeChange = () => {
@@ -291,6 +292,16 @@ const App: React.FC = () => {
     if (e.touches.length < 2) {
       touchStartDist.current = null;
     }
+    
+    // Double tap to reset
+    const now = Date.now();
+    const DOUBLE_TAP_DELAY = 300;
+    if (e.touches.length === 0 && now - lastTap.current < DOUBLE_TAP_DELAY) {
+      // Reset layout and scale
+      setLayoutConfig(INITIAL_LAYOUT);
+      setGlobalScale(1);
+    }
+    lastTap.current = now;
   };
 
   const currentBg = BACKGROUNDS[bgIndex];
@@ -385,49 +396,18 @@ const App: React.FC = () => {
              </div>
           </div>
 
-          {/* Edit Mode Toggle */}
-          <button 
-            onClick={() => setIsEditing(!isEditing)}
-            className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border font-bold text-sm transition-all ${isEditing ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-900/50' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:bg-zinc-800'}`}
-          >
-            {isEditing ? <Check size={16} /> : <Move size={16} />}
-            {isEditing ? ui.finishEditing : ui.adjustLayout}
-          </button>
-
-          {isEditing && (
-             <div className="bg-zinc-900 p-4 rounded-xl border border-zinc-800 space-y-3 animate-fadeIn">
-               
-               {/* Global Scale Slider */}
-               <div className="space-y-2">
-                 <div className="flex justify-between items-center text-[10px] font-bold uppercase text-zinc-500 tracking-wider">
-                    <span className="flex items-center gap-2"><Maximize2 size={12}/> {ui.zoomLevel}</span>
-                    <span className="text-zinc-300">{Math.round(globalScale * 100)}%</span>
-                 </div>
-                 <input 
-                    type="range" 
-                    min="0.4" 
-                    max="2.0" 
-                    step="0.05"
-                    value={globalScale}
-                    onChange={(e) => setGlobalScale(parseFloat(e.target.value))}
-                    className="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
-                 />
-                 <p className="text-[10px] text-zinc-500 text-center">
-                   {ui.zoomHint}
-                 </p>
-               </div>
-               
-               <button 
-                 onClick={() => {
-                   setLayoutConfig(INITIAL_LAYOUT);
-                   setGlobalScale(1);
-                 }}
-                 className="text-[10px] text-red-400 hover:text-red-300 w-full text-center underline"
-               >
-                 {ui.resetLayout}
-               </button>
-             </div>
-          )}
+          {/* Touch Gesture Info */}
+          <div className="bg-zinc-950 p-3 rounded-xl border border-zinc-800 shadow-xl">
+            <div className="flex items-center gap-2 mb-2">
+              <Move size={12} className="text-blue-400" />
+              <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider">タッチ操作</span>
+            </div>
+            <div className="space-y-1 text-[9px] text-zinc-500">
+              <p>📱 ピンチ: 拡大・縮小</p>
+              <p>👆 ドラッグ: 位置移動</p>
+              <p>🔄 ダブルタップ: リセット</p>
+            </div>
+          </div>
 
           {/* Settings Toggles */}
           <div className="grid grid-cols-2 gap-2">
