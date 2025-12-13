@@ -374,7 +374,7 @@ const App: React.FC = () => {
               ? 'scale-[1.02] drop-shadow-2xl' 
               : 'hover:scale-[1.01]'
           }`}
-          style={{ touchAction: 'manipulation' }}
+          style={{ touchAction: 'none' }}
           onWheel={handleWheel}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
