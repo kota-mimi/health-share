@@ -182,14 +182,18 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
       >
         <div 
           ref={contentRef}
-          className={`absolute top-0 left-0 w-full h-full p-4 sm:p-6 origin-center transition-transform duration-200 ease-out ${isEditing ? 'cursor-move ring-1 ring-white/20' : ''}`}
-          style={{
-             transform: `scale(${globalScale})`,
-             transformOrigin: 'center center'
-          }}
+          className={`absolute top-0 left-0 w-full h-full origin-center transition-transform duration-200 ease-out ${isEditing ? 'cursor-move ring-1 ring-white/20' : ''}`}
         >
+          {/* Separate scaling layer */}
+          <div 
+            className="w-full h-full p-4 sm:p-6"
+            style={{
+               transform: `scale(${globalScale})`,
+               transformOrigin: 'center center'
+            }}
+          >
           {/* Inner Flex Container */}
-          <div className="flex flex-col h-full pointer-events-none">
+          <div className="flex flex-col h-full">
             
             {/* Header */}
             <header className={`flex justify-between items-start mb-4 sm:mb-8 border-b ${styles.border} pb-2 sm:pb-4`}>
@@ -315,6 +319,7 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
                 {t.powered}
               </div>
             </footer>
+          </div>
           </div>
         </div>
       </Draggable>

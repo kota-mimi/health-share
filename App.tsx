@@ -228,6 +228,7 @@ const App: React.FC = () => {
   const lastTap = useRef<number>(0);
   const touchStartPos = useRef<{ x: number; y: number } | null>(null);
   const interactionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
 
 
   const handleThemeChange = () => {
@@ -256,6 +257,81 @@ const App: React.FC = () => {
     setLayoutConfig({ x, y });
     setLastInteraction(Date.now());
   };
+
+  // PointerEventsでpassive制限を回避
+  React.useEffect(() => {
+    const cardElement = cardRef.current;
+    if (!cardElement) return;
+
+    let pointers: Map<number, PointerEvent> = new Map();
+
+    const handlePointerDown = (e: PointerEvent) => {
+      if (interactionMode === 'view') {
+        enterEditMode();
+      }
+      
+      pointers.set(e.pointerId, e);
+      
+      if (pointers.size === 2) {
+        const [p1, p2] = Array.from(pointers.values());
+        const dist = Math.hypot(p1.clientX - p2.clientX, p1.clientY - p2.clientY);
+        touchStartDist.current = dist;
+        startScale.current = globalScale;
+      }
+      
+      // Record pointer for double tap detection
+      if (pointers.size === 1) {
+        lastTap.current = Date.now();
+      }
+    };
+
+    const handlePointerMove = (e: PointerEvent) => {
+      if (pointers.has(e.pointerId)) {
+        pointers.set(e.pointerId, e);
+      }
+      
+      if (pointers.size === 2 && touchStartDist.current !== null) {
+        const [p1, p2] = Array.from(pointers.values());
+        const dist = Math.hypot(p1.clientX - p2.clientX, p1.clientY - p2.clientY);
+        
+        const scaleFactor = dist / touchStartDist.current;
+        const rawScale = startScale.current * scaleFactor;
+        const newScale = Math.min(5, Math.max(0.2, rawScale));
+        
+        setGlobalScale(newScale);
+        setLastInteraction(Date.now());
+      }
+    };
+
+    const handlePointerUp = (e: PointerEvent) => {
+      pointers.delete(e.pointerId);
+      
+      if (pointers.size < 2) {
+        touchStartDist.current = null;
+      }
+      
+      // ダブルタップでリセット
+      if (pointers.size === 0) {
+        const now = Date.now();
+        const isQuickTap = now - lastTap.current < 500;
+        if (isQuickTap) {
+          setGlobalScale(1);
+          setLayoutConfig(INITIAL_LAYOUT);
+        }
+      }
+    };
+
+    // PointerEventsはpassive制限がない
+    cardElement.addEventListener('pointerdown', handlePointerDown);
+    cardElement.addEventListener('pointermove', handlePointerMove);
+    cardElement.addEventListener('pointerup', handlePointerUp);
+
+    return () => {
+      cardElement.removeEventListener('pointerdown', handlePointerDown);
+      cardElement.removeEventListener('pointermove', handlePointerMove);
+      cardElement.removeEventListener('pointerup', handlePointerUp);
+    };
+  }, [interactionMode, globalScale, lastInteraction]);
 
   // Auto-switch to view mode after inactivity (Strava-like)
   React.useEffect(() => {
@@ -320,13 +396,8 @@ const App: React.FC = () => {
       startScale.current = globalScale;
     }
     
-    // ダブルタップでリセット
+    // Record tap time for double tap detection
     const now = Date.now();
-    const isQuickTap = now - lastTap.current < 300;
-    if (isQuickTap && e.touches.length === 1) {
-      setGlobalScale(1);
-      setLayoutConfig(INITIAL_LAYOUT);
-    }
     lastTap.current = now;
   };
 
@@ -354,8 +425,14 @@ const App: React.FC = () => {
       touchStartDist.current = null;
     }
     
-    // Handle tap completion for mode switching (handled in touchStart)
+    // ダブルタップでリセット
     if (e.touches.length === 0) {
+      const now = Date.now();
+      const isQuickTap = now - lastTap.current < 500; // タップ間隔を少し長めに
+      if (isQuickTap) {
+        setGlobalScale(1);
+        setLayoutConfig(INITIAL_LAYOUT);
+      }
       touchStartPos.current = null;
     }
   };
@@ -369,6 +446,7 @@ const App: React.FC = () => {
         
         {/* The Card Component Area */}
         <div 
+          ref={cardRef}
           className={`relative group transition-all duration-500 ${
             interactionMode === 'edit' 
               ? 'scale-[1.02] drop-shadow-2xl' 
@@ -471,14 +549,15 @@ const App: React.FC = () => {
              </div>
           </div>
 
-          {/* Touch Gesture Info */}
+
+          {/* 操作説明 */}
           <div className="bg-zinc-950 p-3 rounded-xl border border-zinc-800 shadow-xl">
             <div className="flex items-center gap-2 mb-2">
               <Move size={12} className="text-blue-400" />
-              <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider">タッチ操作</span>
+              <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider">操作方法</span>
             </div>
             <div className="space-y-1 text-[9px] text-zinc-500">
-              <p>📱 ピンチ: 拡大・縮小</p>
+              <p>🤏 ピンチ: サイズ調整</p>
               <p>👆 ドラッグ: 位置移動</p>
               <p>🔄 ダブルタップ: リセット</p>
             </div>
