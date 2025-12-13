@@ -118,36 +118,55 @@ const App: React.FC = () => {
         const dataParam = urlParams.get('data');
         
         if (dataParam) {
+          console.log('🔍 Raw URL data parameter:', dataParam);
+          
           const decodedData = JSON.parse(decodeURIComponent(dataParam));
+          alert(`データを受信しました！carbs: ${decodedData?.carbs || '不明'}`);
           console.log('📊 Received user data:', decodedData);
+          console.log('📊 Specific values:', {
+            carbs: decodedData.carbs,
+            exerciseTime: decodedData.exerciseTime,
+            exerciseBurned: decodedData.exerciseBurned
+          });
+          
+          // Validate the decoded data has required properties
+          if (typeof decodedData !== 'object' || decodedData === null) {
+            console.warn('⚠️ Invalid data format received');
+            return;
+          }
           
           // useShareRecord.tsの形式に合わせてデータを変換
           const userData: DailyLogData = {
             date: new Date(decodedData.date || new Date()),
             weight: {
-              current: decodedData.weight || 0,
-              diff: 0,
+              current: Number(decodedData.weight) || 0,
+              diff: Number(decodedData.weightDiff) || 0,
             },
             calories: {
-              current: decodedData.calories || 0,
-              target: 2100,
+              current: Number(decodedData.calories) || 0,
+              target: Number(decodedData.caloriesTarget) || 2100,
             },
             pfc: {
-              p: { current: decodedData.protein || 0, target: 160, unit: 'g' },
-              f: { current: decodedData.fat || 0, target: 65, unit: 'g' },
-              c: { current: decodedData.carbs || 0, target: 240, unit: 'g' },
+              p: { current: Number(decodedData.protein) || 0, target: 160, unit: 'g' },
+              f: { current: Number(decodedData.fat) || 0, target: 65, unit: 'g' },
+              c: { current: Number(decodedData.carbs) || 0, target: 240, unit: 'g' },
             },
             exercise: {
-              minutes: decodedData.exerciseTime || 0,
-              caloriesBurned: decodedData.exerciseBurned || 0,
+              minutes: Number(decodedData.exerciseTime) || 0,
+              caloriesBurned: Number(decodedData.exerciseBurned) || 0,
             },
-            achievementRate: decodedData.achievementRate || 0,
+            achievementRate: Number(decodedData.achievementRate) || 0,
           };
           
+          console.log('✅ Processed user data:', userData);
           setData(userData);
+        } else {
+          console.log('ℹ️ No URL data found, using mock data');
         }
       } catch (error) {
         console.error('❌ Error parsing URL data:', error);
+        console.log('🔄 Falling back to mock data');
+        // Don't throw - just continue with mock data
       }
     };
     
