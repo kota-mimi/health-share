@@ -333,7 +333,7 @@ const App: React.FC = () => {
     };
   }, [interactionMode, globalScale, lastInteraction]);
 
-  // Auto-switch to view mode after inactivity (Strava-like)
+  // Auto-switch to view mode immediately after interaction ends
   React.useEffect(() => {
     if (interactionMode === 'edit') {
       if (interactionTimeoutRef.current) {
@@ -342,7 +342,7 @@ const App: React.FC = () => {
       
       interactionTimeoutRef.current = setTimeout(() => {
         setInteractionMode('view');
-      }, 3000); // 3 seconds of inactivity switches to view mode
+      }, 100); // Immediately lock after interaction
       
       return () => {
         if (interactionTimeoutRef.current) {
