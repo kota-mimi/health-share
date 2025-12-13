@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { DailyLogCard } from './components/DailyLogCard';
 import { DailyLogData, ThemeColor, LayoutConfig, FontStyleId } from './types';
-import { Download, Palette, Globe, Calendar, EyeOff, Eye, Moon, Sun, Image as ImageIcon, Move, Maximize2, X, PenTool, Type, Gamepad2, Feather, BookOpen, Edit3, Heart, Sparkles, PaintBucket, Check } from 'lucide-react';
+import { Download, Palette, Globe, Calendar, EyeOff, Eye, Moon, Sun, Image as ImageIcon, Move, Maximize2, X, PenTool, Type, Gamepad2, Feather, BookOpen, Edit3, Heart, Sparkles, PaintBucket, Check, MessageSquare, Share } from 'lucide-react';
+import * as htmlToImage from 'html-to-image';
 
 const MOCK_DATA: DailyLogData = {
   date: new Date(),
@@ -55,6 +56,15 @@ const NUMBER_COLORS = [
   { id: 'blue', value: 'text-blue-500', name: 'Blue', bg: 'bg-blue-500' },
   { id: 'purple', value: 'text-violet-500', name: 'Purple', bg: 'bg-violet-500' },
   { id: 'pink', value: 'text-pink-500', name: 'Pink', bg: 'bg-pink-500' },
+];
+
+const REFLECTION_ANSWERS = [
+  { id: 'custom', text: 'ひとこと (例: 今日は充実していた)', emoji: '✏️' },
+  { id: 'yes-absolutely', text: 'Yes, absolutely! ⭐', emoji: '⭐' },
+  { id: 'pretty-good', text: 'Pretty good! 😊', emoji: '😊' },
+  { id: 'it-was-okay', text: 'It was okay 😐', emoji: '😐' },
+  { id: 'amazing-day', text: 'Amazing day! 🎉', emoji: '🎉' },
+  { id: 'not-really', text: 'Not really... 😔', emoji: '😔' },
 ];
 
 const INITIAL_LAYOUT: LayoutConfig = {
@@ -205,12 +215,20 @@ const App: React.FC = () => {
     loadUserData();
   }, []);
   const [theme, setTheme] = useState<ThemeColor>('text-emerald-400' as ThemeColor);
-  const [bgIndex, setBgIndex] = useState(0);
+  const [bgIndex, setBgIndex] = useState(1);
   const [isJapanese, setIsJapanese] = useState(true);
   const [numericDate, setNumericDate] = useState(false);
   const [hideWeight, setHideWeight] = useState(false);
   const [fontStyle, setFontStyle] = useState<FontStyleId>('standard');
   const [numberColor, setNumberColor] = useState<string>('auto');
+  const [showFontDropdown, setShowFontDropdown] = useState(false);
+  const [showColorDropdown, setShowColorDropdown] = useState(false);
+  
+  // Daily reflection feature
+  const [showReflection, setShowReflection] = useState(false);
+  const [reflectionAnswer, setReflectionAnswer] = useState<string>('');
+  const [showReflectionDropdown, setShowReflectionDropdown] = useState(false);
+  const [customReflectionText, setCustomReflectionText] = useState<string>('');
   
   // Customization State
   const [customImage, setCustomImage] = useState<string | null>(null);
@@ -257,6 +275,18 @@ const App: React.FC = () => {
     setLayoutConfig({ x, y });
     setLastInteraction(Date.now());
   };
+
+  // Close dropdowns when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = () => {
+      setShowFontDropdown(false);
+      setShowColorDropdown(false);
+      setShowReflectionDropdown(false);
+    };
+    
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
 
   // PointerEventsでpassive制限を回避
   React.useEffect(() => {
@@ -439,9 +469,57 @@ const App: React.FC = () => {
 
   const currentBg = BACKGROUNDS[bgIndex];
   const ui = isJapanese ? UI_TEXT.ja : UI_TEXT.en;
+  
+  // 画像保存・共有機能
+  const handleSaveAndShare = async () => {
+    const cardElement = cardRef.current;
+    if (!cardElement) {
+      alert('カードが見つかりません');
+      return;
+    }
+
+    try {
+      // HTML要素を画像に変換
+      const dataUrl = await htmlToImage.toPng(cardElement, {
+        quality: 1.0,
+        pixelRatio: 2, // 高解像度
+        backgroundColor: '#ffffff'
+      });
+      
+      // 画像をダウンロード
+      const link = document.createElement('a');
+      link.download = `健康記録_${new Date().toLocaleDateString('ja-JP').replace(/\//g, '-')}.png`;
+      link.href = dataUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Web Share API が使用可能な場合は共有も可能にする
+      if (navigator.share && navigator.canShare) {
+        // dataUrlをBlobに変換
+        const response = await fetch(dataUrl);
+        const blob = await response.blob();
+        const file = new File([blob], `健康記録_${new Date().toLocaleDateString('ja-JP').replace(/\//g, '-')}.png`, { type: 'image/png' });
+        
+        try {
+          await navigator.share({
+            title: '今日の健康記録 - ヘルシーくん',
+            text: '今日の健康データを共有します！',
+            files: [file]
+          });
+        } catch (shareError) {
+          console.log('共有がキャンセルされました');
+        }
+      }
+      
+    } catch (error) {
+      console.error('画像の保存に失敗しました:', error);
+      alert('画像の保存に失敗しました。もう一度お試しください。');
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-zinc-900 flex items-center justify-center p-4 md:p-8 font-sans">
+    <div className="min-h-screen bg-white flex items-center justify-center p-4 md:p-8 font-sans">
       <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
         
         {/* The Card Component Area */}
@@ -482,11 +560,14 @@ const App: React.FC = () => {
                globalScale={globalScale}
                fontStyle={fontStyle}
                numberColor={numberColor}
+               showReflection={showReflection}
+               reflectionAnswer={reflectionAnswer}
+               customReflectionText={customReflectionText}
              />
           </div>
           {/* Professional interaction indicators */}
           {interactionMode === 'edit' && (
-            <div className="absolute top-4 right-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm pointer-events-none z-50 animate-in slide-in-from-top-2 duration-300">
+            <div className="absolute top-4 right-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm pointer-events-none z-50 animate-in slide-in-from-top-2 duration-300">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                 {ui.dragHint}
@@ -495,7 +576,7 @@ const App: React.FC = () => {
           )}
           
           {interactionMode === 'view' && (
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/60 text-white text-xs px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm pointer-events-none z-50">
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-800/80 text-white text-xs px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm pointer-events-none z-50">
               {isJapanese ? 'ダブルタップで編集' : 'Double tap to edit'}
             </div>
           )}
@@ -503,71 +584,37 @@ const App: React.FC = () => {
 
         {/* Controls / Context Area */}
         <div className="flex flex-col max-w-sm w-full space-y-5 h-[640px] overflow-y-auto pr-2">
-          <div className="space-y-1">
-            <h2 className="text-2xl font-bold text-white">{ui.title}</h2>
-            <p className="text-zinc-400 text-xs leading-relaxed">
-              {ui.subtitle}
-            </p>
-          </div>
-
-          {/* Font Selector */}
-          <div className="space-y-2">
-             <h3 className="text-[10px] font-bold uppercase text-zinc-500 tracking-wider px-1">{ui.fontStyle}</h3>
-             <div className="grid grid-cols-4 gap-2">
-                {FONTS.map(font => (
-                  <button
-                    key={font.id}
-                    onClick={() => setFontStyle(font.id)}
-                    className={`flex flex-col items-center justify-center p-2 rounded-lg border transition-all ${fontStyle === font.id ? 'bg-zinc-100 border-white text-black shadow-lg scale-105 ring-2 ring-blue-500/50' : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800'}`}
-                  >
-                    <div className="mb-1.5">{font.icon}</div>
-                    <span className="text-[9px] font-bold tracking-wide truncate w-full text-center">{font.name}</span>
-                  </button>
-                ))}
-             </div>
-          </div>
-
-          {/* Number Color Selector (NEW) */}
-          <div className="space-y-2">
-             <h3 className="text-[10px] font-bold uppercase text-zinc-500 tracking-wider px-1 flex items-center gap-2">
-               <PaintBucket size={12} /> {ui.numberColor}
-             </h3>
-             <div className="flex flex-wrap gap-2">
-                {NUMBER_COLORS.map(color => (
-                  <button
-                    key={color.id}
-                    onClick={() => setNumberColor(color.value)}
-                    title={color.name}
-                    className={`w-8 h-8 rounded-full border-2 transition-all flex items-center justify-center
-                      ${numberColor === color.value ? 'border-white scale-110 shadow-[0_0_10px_rgba(255,255,255,0.5)]' : 'border-zinc-800 hover:border-zinc-500'}
-                      ${color.bg}
-                    `}
-                  >
-                    {color.id === 'auto' && <span className="text-[8px] text-zinc-400 font-bold">A</span>}
-                  </button>
-                ))}
-             </div>
-          </div>
-
-
-          {/* 操作説明 */}
-          <div className="bg-zinc-950 p-3 rounded-xl border border-zinc-800 shadow-xl">
-            <div className="flex items-center gap-2 mb-2">
-              <Move size={12} className="text-blue-400" />
-              <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider">操作方法</span>
-            </div>
-            <div className="space-y-1 text-[9px] text-zinc-500">
-              <p>🤏 ピンチ: サイズ調整</p>
-              <p>👆 ドラッグ: 位置移動</p>
-              <p>🔄 ダブルタップ: リセット</p>
-            </div>
-          </div>
 
           {/* Settings Toggles */}
           <div className="grid grid-cols-2 gap-2">
              <button 
+                onClick={handleBgChange}
+                disabled={!!customImage}
+                className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg border text-xs font-mono transition-colors ${!!customImage ? 'opacity-50 cursor-not-allowed border-gray-300 text-gray-500' : 'bg-gray-100 border-gray-300 text-gray-700 hover:text-gray-900'}`}
+              >
+                {currentBg.isDark ? <Moon size={12} /> : <Sun size={12} />}
+                <span>テーマ</span>
+              </button>
+              <div className="relative">
+                 <input 
+                    type="file" 
+                    accept="image/*" 
+                    ref={fileInputRef} 
+                    onChange={handleImageUpload} 
+                    className="hidden" 
+                 />
+                 <button 
+                    onClick={() => customImage ? setCustomImage(null) : fileInputRef.current?.click()}
+                    className={`w-full h-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg border text-xs font-mono transition-colors ${customImage ? 'bg-red-100 border-red-300 text-red-700 hover:bg-red-200' : 'bg-gray-100 border-gray-300 text-gray-700 hover:text-gray-900'}`}
+                 >
+                    {customImage ? <X size={12} /> : <ImageIcon size={12} />}
+                    <span>{customImage ? '削除' : '画像追加'}</span>
+                 </button>
+              </div>
+
+             <button 
                 onClick={() => setIsJapanese(!isJapanese)}
-                className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg border text-xs font-mono transition-colors ${isJapanese ? 'bg-zinc-800 border-zinc-600 text-white' : 'bg-zinc-950 border-zinc-800 text-zinc-500 hover:text-zinc-300'}`}
+                className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg border text-xs font-mono transition-colors ${isJapanese ? 'bg-blue-100 border-blue-300 text-blue-900' : 'bg-gray-100 border-gray-300 text-gray-700 hover:text-gray-900'}`}
               >
                 <Globe size={12} />
                 {isJapanese ? "日本語" : "English"}
@@ -575,87 +622,208 @@ const App: React.FC = () => {
 
              <button 
                 onClick={() => setNumericDate(!numericDate)}
-                className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg border text-xs font-mono transition-colors ${numericDate ? 'bg-zinc-800 border-zinc-600 text-white' : 'bg-zinc-950 border-zinc-800 text-zinc-500 hover:text-zinc-300'}`}
+                className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg border text-xs font-mono transition-colors ${numericDate ? 'bg-blue-100 border-blue-300 text-blue-900' : 'bg-gray-100 border-gray-300 text-gray-700 hover:text-gray-900'}`}
               >
                 <Calendar size={12} />
-                {numericDate ? "11/12" : "NOV 12"}
+                {numericDate ? "11/12" : "11月 12日"}
              </button>
 
              <button 
                 onClick={() => setHideWeight(!hideWeight)}
-                className={`col-span-2 flex items-center justify-center gap-2 px-3 py-2 rounded-lg border text-xs font-mono transition-colors ${hideWeight ? 'bg-zinc-800 border-zinc-600 text-white' : 'bg-zinc-950 border-zinc-800 text-zinc-500 hover:text-zinc-300'}`}
+                className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg border text-xs font-mono transition-colors ${hideWeight ? 'bg-blue-100 border-blue-300 text-blue-900' : 'bg-gray-100 border-gray-300 text-gray-700 hover:text-gray-900'}`}
               >
                 {hideWeight ? <EyeOff size={12} /> : <Eye size={12} />}
-                {hideWeight ? "Hidden" : "Weight"}
+                {hideWeight ? "非表示" : "体重"}
              </button>
+
+             <div className="relative">
+               <button 
+                  onClick={() => setShowReflection(!showReflection)}
+                  className={`w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg border text-xs font-mono transition-colors ${showReflection ? 'bg-blue-100 border-blue-300 text-blue-900' : 'bg-gray-100 border-gray-300 text-gray-700 hover:text-gray-900'}`}
+                >
+                  <MessageSquare size={12} />
+                  {showReflection ? "ひとこと" : "ひとこと無し"}
+               </button>
+               {showReflection && (
+                 <div className="absolute top-full left-0 right-0 mt-1 z-50">
+                   <button
+                     onClick={(e) => {
+                       e.stopPropagation();
+                       setShowReflectionDropdown(!showReflectionDropdown);
+                     }}
+                     className="w-full flex items-center justify-between p-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all"
+                   >
+                     <div className="flex items-center gap-3">
+                       <span className="text-sm font-medium text-gray-900">
+                         {reflectionAnswer ? (reflectionAnswer === 'custom' ? (customReflectionText || 'ひとこと') : REFLECTION_ANSWERS.find(a => a.id === reflectionAnswer)?.text.replace(/[⭐😊😐🎉😔✏️]/g, '').trim()) : 'ひとことを選択...'}
+                       </span>
+                     </div>
+                     <svg className={`w-4 h-4 text-gray-500 transition-transform ${showReflectionDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                     </svg>
+                   </button>
+                   {showReflectionDropdown && (
+                     <div className="mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+                       {REFLECTION_ANSWERS.map(answer => (
+                         <button
+                           key={answer.id}
+                           onClick={() => {
+                             setReflectionAnswer(answer.id);
+                             // 全ての選択で即座に閉じる
+                             setShowReflectionDropdown(false);
+                           }}
+                           className={`w-full flex items-center gap-3 p-3 text-left hover:bg-gray-50 transition-colors ${reflectionAnswer === answer.id ? 'bg-blue-50 text-blue-900' : 'text-gray-700'}`}
+                         >
+                           <span className="text-sm font-medium">{answer.text.replace(/[⭐😊😐🎉😔✏️]/g, '').trim()}</span>
+                           {reflectionAnswer === answer.id && (
+                             <svg className="w-4 h-4 text-blue-600 ml-auto" fill="currentColor" viewBox="0 0 20 20">
+                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                             </svg>
+                           )}
+                         </button>
+                       ))}
+                     </div>
+                   )}
+                 </div>
+               )}
+               
+               {/* カスタム入力フィールド */}
+               {showReflection && reflectionAnswer === 'custom' && (
+                 <div className="mt-2 p-3 bg-white border border-gray-300 rounded-lg">
+                   <input
+                     type="text"
+                     placeholder="ひとこと (例: 今日は充実していた)"
+                     value={customReflectionText}
+                     onChange={(e) => setCustomReflectionText(e.target.value)}
+                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                     autoFocus
+                   />
+                 </div>
+               )}
+             </div>
           </div>
 
-          {/* Background Controls */}
-           <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 shadow-xl space-y-3">
-            <h3 className="text-[10px] font-bold uppercase text-zinc-500 tracking-wider">{ui.background}</h3>
-            
-            <div className="flex gap-2">
-               <button 
-                  onClick={handleBgChange}
-                  disabled={!!customImage}
-                  className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg border text-xs transition-colors ${!!customImage ? 'opacity-50 cursor-not-allowed border-zinc-800 text-zinc-600' : 'bg-zinc-900 hover:bg-zinc-800 text-white border-zinc-700'}`}
-                >
-                  {currentBg.isDark ? <Moon size={12} /> : <Sun size={12} />}
-                  <span>{ui.theme}</span>
-                </button>
-                <div className="relative flex-1">
-                   <input 
-                      type="file" 
-                      accept="image/*" 
-                      ref={fileInputRef} 
-                      onChange={handleImageUpload} 
-                      className="hidden" 
-                   />
-                   <button 
-                      onClick={() => customImage ? setCustomImage(null) : fileInputRef.current?.click()}
-                      className={`w-full h-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg border text-xs transition-colors ${customImage ? 'bg-red-900/30 border-red-800 text-red-400 hover:bg-red-900/50' : 'bg-zinc-900 hover:bg-zinc-800 text-white border-zinc-700'}`}
+          {/* Font Selector */}
+          <div className="space-y-2 relative">
+             <h3 className="text-[10px] font-bold uppercase text-zinc-700 tracking-wider px-1">{ui.fontStyle}</h3>
+             <button
+               onClick={(e) => {
+                 e.stopPropagation();
+                 setShowFontDropdown(!showFontDropdown);
+               }}
+               className="w-full flex items-center justify-between p-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all"
+             >
+               <div className="flex items-center gap-3">
+                 {FONTS.find(f => f.id === fontStyle)?.icon}
+                 <span className="text-sm font-medium text-gray-900">
+                   {FONTS.find(f => f.id === fontStyle)?.name}
+                 </span>
+               </div>
+               <svg className={`w-4 h-4 text-gray-500 transition-transform ${showFontDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+               </svg>
+             </button>
+             {showFontDropdown && (
+               <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
+                 {FONTS.map(font => (
+                   <button
+                     key={font.id}
+                     onClick={() => {
+                       setFontStyle(font.id);
+                       setShowFontDropdown(false);
+                     }}
+                     className={`w-full flex items-center gap-3 p-3 text-left hover:bg-gray-50 transition-colors ${fontStyle === font.id ? 'bg-blue-50 text-blue-900' : 'text-gray-700'}`}
                    >
-                      {customImage ? <X size={12} /> : <ImageIcon size={12} />}
-                      <span>{customImage ? ui.remove : ui.upload}</span>
+                     {font.icon}
+                     <span className="text-sm font-medium">{font.name}</span>
+                     {fontStyle === font.id && (
+                       <svg className="w-4 h-4 text-blue-600 ml-auto" fill="currentColor" viewBox="0 0 20 20">
+                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                       </svg>
+                     )}
                    </button>
-                </div>
-            </div>
+                 ))}
+               </div>
+             )}
+          </div>
 
-            {customImage && (
-              <div className="space-y-2 pt-2 border-t border-zinc-800">
-                <div className="flex justify-between text-[10px] text-zinc-400">
-                  <span>{ui.overlayDarkness}</span>
-                  <span>{Math.round(overlayOpacity * 100)}%</span>
-                </div>
-                <input 
-                  type="range" 
-                  min="0" 
-                  max="0.95" 
-                  step="0.05"
-                  value={overlayOpacity}
-                  onChange={(e) => setOverlayOpacity(parseFloat(e.target.value))}
-                  className="w-full h-1 bg-zinc-700 rounded-lg appearance-none cursor-pointer"
-                />
+          {/* Number Color Selector */}
+          <div className="space-y-2 relative">
+             <h3 className="text-[10px] font-bold uppercase text-zinc-700 tracking-wider px-1 flex items-center gap-2">
+               <PaintBucket size={12} /> {ui.numberColor}
+             </h3>
+             <button
+               onClick={(e) => {
+                 e.stopPropagation();
+                 setShowColorDropdown(!showColorDropdown);
+               }}
+               className="w-full flex items-center justify-between p-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all"
+             >
+               <div className="flex items-center gap-3">
+                 <div className={`w-5 h-5 rounded-full border-2 border-gray-300 ${NUMBER_COLORS.find(c => c.value === numberColor)?.bg || 'bg-gray-200'} flex items-center justify-center`}>
+                   {numberColor === 'auto' && <span className="text-[10px] text-zinc-600 font-bold">A</span>}
+                 </div>
+                 <span className="text-sm font-medium text-gray-900">
+                   {NUMBER_COLORS.find(c => c.value === numberColor)?.name || 'Auto'}
+                 </span>
+               </div>
+               <svg className={`w-4 h-4 text-gray-500 transition-transform ${showColorDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+               </svg>
+             </button>
+             {showColorDropdown && (
+               <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
+                 {NUMBER_COLORS.map(color => (
+                   <button
+                     key={color.id}
+                     onClick={() => {
+                       setNumberColor(color.value);
+                       setShowColorDropdown(false);
+                     }}
+                     className={`w-full flex items-center gap-3 p-3 text-left hover:bg-gray-50 transition-colors ${numberColor === color.value ? 'bg-blue-50 text-blue-900' : 'text-gray-700'}`}
+                   >
+                     <div className={`w-5 h-5 rounded-full border-2 border-gray-300 ${color.bg} flex items-center justify-center`}>
+                       {color.id === 'auto' && <span className="text-[10px] text-zinc-600 font-bold">A</span>}
+                     </div>
+                     <span className="text-sm font-medium">{color.name}</span>
+                     {numberColor === color.value && (
+                       <svg className="w-4 h-4 text-blue-600 ml-auto" fill="currentColor" viewBox="0 0 20 20">
+                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                       </svg>
+                     )}
+                   </button>
+                 ))}
+               </div>
+             )}
+          </div>
+
+
+          {/* Overlay Controls */}
+          {customImage && (
+            <div className="space-y-2">
+              <div className="flex justify-between text-[10px] text-zinc-700">
+                <span>{ui.overlayDarkness}</span>
+                <span>{Math.round(overlayOpacity * 100)}%</span>
               </div>
-            )}
-           </div>
+              <input 
+                type="range" 
+                min="0" 
+                max="0.95" 
+                step="0.05"
+                value={overlayOpacity}
+                onChange={(e) => setOverlayOpacity(parseFloat(e.target.value))}
+                className="w-full h-1 bg-gray-300 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
+          )}
 
           {/* Main Action Buttons */}
-          <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 shadow-xl space-y-3">
+          <div className="bg-gray-100 p-4 rounded-xl border border-gray-300 shadow-xl space-y-3">
 
-            <button 
-              onClick={handleThemeChange}
-              className="w-full flex items-center justify-center gap-3 px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white rounded-lg border border-zinc-700 transition-all duration-200"
-            >
-              <Palette size={16} className={theme.split(' ')[0]} />
-              <span className="font-mono text-xs">{ui.accentColor}</span>
-            </button>
-
-            <div className="h-px bg-zinc-800 my-1" />
 
              <button 
-              className="w-full flex items-center justify-center gap-3 px-4 py-2.5 bg-white hover:bg-zinc-200 text-black rounded-lg transition-all duration-200 shadow-[0_0_15px_rgba(255,255,255,0.1)]"
-              onClick={() => alert("In a real app, this would use html-to-image to download the card.")}
+              className="w-full flex items-center justify-center gap-3 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 shadow-lg"
+              onClick={handleSaveAndShare}
             >
               <Download size={16} />
               <span className="font-mono text-xs font-bold">{ui.shareSave}</span>

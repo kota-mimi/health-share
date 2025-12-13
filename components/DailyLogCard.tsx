@@ -21,6 +21,9 @@ interface DailyLogCardProps {
   globalScale?: number;
   fontStyle?: FontStyleId;
   numberColor?: string;
+  showReflection?: boolean;
+  reflectionAnswer?: string;
+  customReflectionText?: string;
 }
 
 const TEXT = {
@@ -72,7 +75,10 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
   isEditing = false,
   globalScale = 1,
   fontStyle = 'standard',
-  numberColor = 'auto'
+  numberColor = 'auto',
+  showReflection = false,
+  reflectionAnswer = '',
+  customReflectionText = ''
 }) => {
   const t = isJapanese ? TEXT.ja : TEXT.en;
   const contentRef = useRef<HTMLDivElement>(null);
@@ -102,23 +108,33 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
   
   const fonts = getFontClasses();
 
+  // Reflection answers mapping
+  const REFLECTION_ANSWERS = [
+    { id: 'yes-absolutely', text: 'Yes, absolutely! ⭐', emoji: '⭐' },
+    { id: 'pretty-good', text: 'Pretty good! 😊', emoji: '😊' },
+    { id: 'it-was-okay', text: 'It was okay 😐', emoji: '😐' },
+    { id: 'amazing-day', text: 'Amazing day! 🎉', emoji: '🎉' },
+    { id: 'not-really', text: 'Not really... 😔', emoji: '😔' },
+    { id: 'custom', text: 'カスタム入力...', emoji: '✏️' },
+  ];
+
   // Define styles based on mode (if no custom image)
   const effectiveIsDarkMode = customImage ? true : isDarkMode;
   
   const styles = effectiveIsDarkMode ? {
     textPrimary: 'text-white',
-    textSecondary: 'text-white/50',
+    textSecondary: 'text-white/80',
     textTertiary: 'text-white/20',
-    textMuted: 'text-white/40',
+    textMuted: 'text-white/70',
     border: 'border-white/10',
     panelBg: 'bg-white/5',
     iconBg: 'bg-white/5',
     footer: 'text-white/60'
   } : {
     textPrimary: 'text-zinc-900',
-    textSecondary: 'text-zinc-500',
+    textSecondary: 'text-zinc-700',
     textTertiary: 'text-zinc-300',
-    textMuted: 'text-zinc-400',
+    textMuted: 'text-zinc-800',
     border: 'border-zinc-200',
     panelBg: 'bg-zinc-50',
     iconBg: 'bg-zinc-100',
@@ -142,7 +158,7 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
     return <Minus size={14} />;
   };
 
-  const diffColor = data.weight.diff < 0 ? theme.split(' ')[0] : (data.weight.diff > 0 ? 'text-rose-400' : styles.textSecondary);
+  const diffColor = data.weight.diff < 0 ? 'text-green-500' : (data.weight.diff > 0 ? 'text-red-500' : styles.textSecondary);
 
   // Helper to determine text color for numbers
   const numColorClass = numberColor !== 'auto' ? numberColor : styles.textPrimary;
@@ -203,50 +219,64 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
               </div>
             </header>
 
-            {/* Hero Metrics (Weight & Calories) */}
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-10">
+            {/* First Row: Weight, Intake, Burned (smaller text) */}
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-6 sm:mb-8">
               {/* Weight */}
               <div className="flex flex-col">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className={`text-[8px] sm:text-[10px] uppercase ${fonts.label} ${styles.textSecondary}`}>{t.weight}</span>
+                  <div className="flex items-center gap-1 mb-1">
+                    <span className={`text-[7px] sm:text-[8px] uppercase ${fonts.label} ${styles.textSecondary}`}>{t.weight}</span>
                   </div>
                   
                   {hideWeight ? (
                     <div className="flex items-baseline gap-1">
-                      <div className={`text-3xl sm:text-6xl ${fonts.val} font-bold tracking-tighter flex items-center h-[40px] sm:h-[60px] ${styles.textTertiary}`}>
-                        <span className="text-2xl sm:text-4xl">●●●</span>
+                      <div className={`text-lg sm:text-2xl ${fonts.val} font-bold tracking-tighter flex items-center h-[24px] sm:h-[32px] ${styles.textTertiary}`}>
+                        <span className="text-sm sm:text-lg">●●●</span>
                       </div>
                     </div>
                   ) : (
-                    <div className="flex items-baseline gap-1">
-                      <span className={`text-3xl sm:text-6xl ${fonts.val} font-bold tracking-tighter ${numColorClass}`}>{data.weight.current}</span>
-                      <span className={`text-xs sm:text-sm font-bold ${fonts.val} ${effectiveIsDarkMode ? 'text-white/60' : 'text-zinc-500'}`}>KG</span>
+                    <div className="flex flex-col">
+                      <div className="flex items-baseline gap-1">
+                        <span className={`text-lg sm:text-2xl ${fonts.val} font-bold tracking-tighter ${numColorClass}`}>{data.weight.current}</span>
+                        <span className={`text-[10px] sm:text-xs font-bold ${fonts.val} ${effectiveIsDarkMode ? 'text-white/60' : 'text-zinc-500'}`}>KG</span>
+                      </div>
+                      <div className={`flex items-center gap-1 mt-1 text-[10px] ${fonts.val} ${diffColor}`}>
+                        {getWeightDiffIcon(data.weight.diff)}
+                        <span>{Math.abs(data.weight.diff)} kg</span>
+                      </div>
                     </div>
                   )}
                   
-                  {hideWeight ? (
-                    <div className={`flex items-center gap-1 mt-1 text-xs ${fonts.val} ${styles.textMuted}`}>
-                      <Lock size={12} />
+                  {hideWeight && (
+                    <div className={`flex items-center gap-1 mt-1 text-[9px] ${fonts.val} ${styles.textMuted}`}>
+                      <Lock size={10} />
                       <span>PRIVATE</span>
-                    </div>
-                  ) : (
-                    <div className={`flex items-center gap-1 mt-1 text-sm ${fonts.val} ${diffColor}`}>
-                      {getWeightDiffIcon(data.weight.diff)}
-                      <span>{Math.abs(data.weight.diff)} kg</span>
                     </div>
                   )}
                 </div>
 
-              {/* Calories */}
-              <div className="flex flex-col items-end">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className={`text-[8px] sm:text-[10px] uppercase ${fonts.label} ${styles.textSecondary}`}>{t.intake}</span>
+              {/* Intake Calories */}
+              <div className="flex flex-col text-center">
+                  <div className="flex items-center justify-center gap-1 mb-1">
+                    <span className={`text-[7px] sm:text-[8px] uppercase ${fonts.label} ${styles.textSecondary}`}>{t.intake}</span>
                   </div>
-                  <div className="flex items-baseline gap-1">
-                    <span className={`text-3xl sm:text-6xl ${fonts.val} font-bold tracking-tighter ${numColorClass}`}>{data.calories.current}</span>
+                  <div className="flex flex-col">
+                    <span className={`text-lg sm:text-2xl ${fonts.val} font-bold tracking-tighter ${numColorClass}`}>{data.calories.current}</span>
+                    <div className={`text-[9px] sm:text-[10px] ${fonts.val} ${styles.textSecondary} mt-1`}>
+                      <span>/ {data.calories.target} KCAL</span>
+                    </div>
                   </div>
-                  <div className={`flex items-center gap-1 mt-1 text-xs sm:text-sm ${fonts.val} ${styles.textSecondary}`}>
-                    <span>/ {data.calories.target} KCAL</span>
+                </div>
+
+              {/* Burned Calories */}
+              <div className="flex flex-col text-right">
+                  <div className="flex items-center justify-end gap-1 mb-1">
+                    <span className={`text-[7px] sm:text-[8px] uppercase ${fonts.label} ${styles.textSecondary}`}>{t.burned}</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className={`text-lg sm:text-2xl ${fonts.val} font-bold tracking-tighter ${numColorClass}`}>{data.exercise.caloriesBurned}</span>
+                    <div className={`text-[9px] sm:text-[10px] ${fonts.val} ${styles.textSecondary} mt-1`}>
+                      <span>KCAL</span>
+                    </div>
                   </div>
                 </div>
             </div>
@@ -292,33 +322,37 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
                 </div>
               </div>
 
-            {/* Bottom Section: Exercise Only */}
-            <div>
-                <div className="flex items-start pt-2">
-                  {/* Time */}
-                  <div className="flex-1 flex flex-col pr-4 sm:pr-6 border-r border-dashed border-zinc-700/50">
-                      <div className={`text-[8px] sm:text-[10px] tracking-wider uppercase mb-1 ${fonts.label} ${styles.textSecondary}`}>{t.minutes}</div>
-                      <div className={`text-3xl sm:text-5xl ${fonts.val} font-bold leading-none ${numColorClass}`}>{data.exercise.minutes}</div>
-                  </div>
+            {/* ヘルシーくん - ひとことがない場合はここに表示 */}
+            {!showReflection && (
+              <div className="mt-6 sm:mt-8 text-center">
+                <span className={`text-[8px] sm:text-[9px] ${fonts.label} font-normal ${styles.textMuted}`}>ヘルシーくん</span>
+              </div>
+            )}
 
-                  {/* Burned */}
-                  <div className="flex-1 flex flex-col pl-4 sm:pl-8">
-                      <div className={`text-[8px] sm:text-[10px] tracking-wider uppercase mb-1 ${fonts.label} ${styles.textSecondary}`}>{t.burned}</div>
-                      <div className={`text-3xl sm:text-5xl ${fonts.val} font-bold leading-none ${numColorClass}`}>{data.exercise.caloriesBurned}</div>
-                  </div>
+            {/* Daily Reflection */}
+            {showReflection && reflectionAnswer && (
+              <div className="mt-6 sm:mt-8">
+                <div className="flex justify-between items-end mb-2 sm:mb-3">
+                  <span className={`text-[8px] sm:text-[10px] uppercase ${fonts.label} ${styles.textMuted}`}>Did you have a good day?</span>
+                </div>
+                <div className="flex items-center">
+                  <span className={`text-sm sm:text-base ${fonts.val} ${styles.textPrimary}`}>
+                    {reflectionAnswer === 'custom' 
+                      ? (customReflectionText || 'カスタム入力...') 
+                      : REFLECTION_ANSWERS.find(a => a.id === reflectionAnswer)?.text.replace(/[⭐😊😐🎉😔✏️]/g, '').trim()
+                    }
+                  </span>
                 </div>
               </div>
+            )}
 
-            {/* Footer */}
-            <footer className={`mt-auto pt-2 sm:pt-4 border-t ${styles.border} flex justify-between items-center opacity-50`}>
-              <div className={`text-[7px] sm:text-[9px] uppercase tracking-widest flex items-center gap-1 sm:gap-1.5 ${styles.footer}`}>
-                <div className={`w-1 h-1 rounded-full ${effectiveIsDarkMode ? 'bg-white/60' : 'bg-zinc-400'}`} />
-                {t.hidden}
+            {/* ヘルシーくん - ひとことがある場合は一番下に表示 */}
+            {showReflection && reflectionAnswer && (
+              <div className="mt-4 sm:mt-6 text-center">
+                <span className={`text-[8px] sm:text-[9px] ${fonts.label} font-normal ${styles.textMuted}`}>ヘルシーくん</span>
               </div>
-              <div className={`text-[7px] sm:text-[9px] ${fonts.val} flex items-center gap-1 sm:gap-1.5 ${styles.footer}`}>
-                {t.powered}
-              </div>
-            </footer>
+            )}
+
           </div>
           </div>
         </div>

@@ -49,15 +49,16 @@ export const StatBar: React.FC<StatBarProps> = ({
     ? numberColor 
     : (isDarkMode ? 'text-white' : 'text-zinc-900');
 
+  
   return (
     <div className="w-full mb-3 last:mb-0">
       <div className="flex justify-between items-end mb-1">
-        <span className={`${fonts.label} uppercase ${isDarkMode ? 'text-zinc-500' : 'text-zinc-400'}`}>
+        <span className={`${fonts.label} uppercase ${isDarkMode ? 'text-white' : 'text-zinc-900'}`}>
           {label}
         </span>
-        <div className={`${fonts.val} ${isDarkMode ? 'text-zinc-400' : 'text-zinc-600'}`}>
-          <span className={`font-bold ${currentValColor}`}>{current}</span>
-          <span className={isDarkMode ? 'text-zinc-600' : 'text-zinc-400'}> / {target}{unit}</span>
+        <div className={`${fonts.val}`}>
+          <span className={`font-bold ${colorClass}`}>{current}</span>
+          <span className={isDarkMode ? 'text-white' : 'text-zinc-900'}> / {target}{unit}</span>
         </div>
       </div>
       
@@ -73,7 +74,9 @@ export const StatBar: React.FC<StatBarProps> = ({
               key={i}
               className={`flex-1 rounded-[1px] transition-all duration-300 ${
                 isFilled 
-                  ? (colorClass === 'text-green-500' ? 'bg-green-500' : colorClass.replace('text-', 'bg-'))
+                  ? (colorClass === 'text-red-500' ? 'bg-red-500' : 
+                     colorClass === 'text-yellow-400' ? 'bg-yellow-400' : 
+                     colorClass === 'text-green-500' ? 'bg-green-500' : 'bg-gray-400')
                   : (isDarkMode ? 'bg-zinc-700' : 'bg-zinc-300')
               }`}
               style={{ 
