@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { DailyLogCard } from './components/DailyLogCard';
 import { DailyLogData, ThemeColor, LayoutConfig, FontStyleId } from './types';
-import { RefreshCw, Download, Palette, Globe, Calendar, EyeOff, Eye, Moon, Sun, Image as ImageIcon, Move, Maximize2, X, PenTool, Type, Gamepad2, Feather, BookOpen, Edit3, Heart, Sparkles, PaintBucket, Check } from 'lucide-react';
+import { Download, Palette, Globe, Calendar, EyeOff, Eye, Moon, Sun, Image as ImageIcon, Move, Maximize2, X, PenTool, Type, Gamepad2, Feather, BookOpen, Edit3, Heart, Sparkles, PaintBucket, Check } from 'lucide-react';
 
 const MOCK_DATA: DailyLogData = {
   date: new Date(),
@@ -98,7 +98,6 @@ const UI_TEXT = {
     upload: '画像追加',
     remove: '削除',
     overlayDarkness: '画像の暗さ',
-    simulate: 'データ更新 (テスト用)',
     accentColor: 'アクセント色',
     shareSave: '保存 / 共有',
     dragHint: 'ドラッグで移動 • ホイールで拡大'
@@ -225,25 +224,6 @@ const App: React.FC = () => {
   const touchStartDist = useRef<number | null>(null);
   const startScale = useRef<number>(1);
 
-  // Simulate AI data generation
-  const handleRegenerate = () => {
-    const randomDiff = (Math.random() * 2 - 1).toFixed(1);
-    const newWeight = (72 + Math.random()).toFixed(1);
-    
-    setData({
-      ...data,
-      date: new Date(),
-      weight: {
-        current: parseFloat(newWeight),
-        diff: parseFloat(randomDiff),
-      },
-      calories: {
-        current: Math.floor(1600 + Math.random() * 600),
-        target: 2200,
-      },
-      achievementRate: Math.floor(60 + Math.random() * 40),
-    });
-  };
 
   const handleThemeChange = () => {
     if (theme === ThemeColor.EMERALD) setTheme(ThemeColor.CYAN);
@@ -522,13 +502,6 @@ const App: React.FC = () => {
 
           {/* Main Action Buttons */}
           <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 shadow-xl space-y-3">
-            <button 
-              onClick={handleRegenerate}
-              className="w-full flex items-center justify-center gap-3 px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white rounded-lg border border-zinc-700 transition-all duration-200 group"
-            >
-              <RefreshCw size={16} className="group-hover:rotate-180 transition-transform duration-500" />
-              <span className="font-mono text-xs">{ui.simulate}</span>
-            </button>
 
             <button 
               onClick={handleThemeChange}
