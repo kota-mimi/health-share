@@ -251,53 +251,59 @@ const App: React.FC = () => {
   };
 
   const handleWheel = (e: React.WheelEvent) => {
-    if (!isEditing) return;
-    
-    // Zoom in/out based on wheel delta
-    const delta = -e.deltaY * 0.001;
-    const newScale = Math.min(2, Math.max(0.4, globalScale + delta));
+    // Always allow wheel zoom, regardless of edit mode
+    e.preventDefault();
+    const delta = -e.deltaY * 0.002; // Increased sensitivity
+    const newScale = Math.min(3, Math.max(0.3, globalScale + delta)); // Extended range
     setGlobalScale(newScale);
   };
 
-  // Pinch Zoom Handling
+  // Enhanced Pinch Zoom for Mobile
   const handleTouchStart = (e: React.TouchEvent) => {
-    if (!isEditing || e.touches.length !== 2) return;
-    const dist = Math.hypot(
-      e.touches[0].clientX - e.touches[1].clientX,
-      e.touches[0].clientY - e.touches[1].clientY
-    );
-    touchStartDist.current = dist;
-    startScale.current = globalScale;
+    if (e.touches.length === 2) {
+      // Pinch zoom with 2 fingers
+      e.preventDefault();
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      touchStartDist.current = dist;
+      startScale.current = globalScale;
+    }
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isEditing || e.touches.length !== 2 || touchStartDist.current === null) return;
-    e.preventDefault(); // Prevent page scroll
-    
-    const dist = Math.hypot(
-      e.touches[0].clientX - e.touches[1].clientX,
-      e.touches[0].clientY - e.touches[1].clientY
-    );
-    
-    const scaleFactor = dist / touchStartDist.current;
-    const newScale = Math.min(2, Math.max(0.4, startScale.current * scaleFactor));
-    setGlobalScale(newScale);
+    if (e.touches.length === 2 && touchStartDist.current !== null) {
+      e.preventDefault(); // Prevent page scroll and bounce
+      
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      
+      const scaleFactor = dist / touchStartDist.current;
+      const newScale = Math.min(3, Math.max(0.3, startScale.current * scaleFactor)); // Extended range
+      setGlobalScale(newScale);
+    }
   };
 
-  const handleTouchEnd = () => {
-    touchStartDist.current = null;
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (e.touches.length < 2) {
+      touchStartDist.current = null;
+    }
   };
 
   const currentBg = BACKGROUNDS[bgIndex];
   const ui = isJapanese ? UI_TEXT.ja : UI_TEXT.en;
 
   return (
-    <div className="min-h-screen bg-zinc-900 flex items-center justify-center p-4 md:p-8 font-sans touch-none md:touch-auto">
+    <div className="min-h-screen bg-zinc-900 flex items-center justify-center p-4 md:p-8 font-sans">
       <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
         
         {/* The Card Component Area */}
         <div 
-          className="relative group touch-none"
+          className="relative group"
+          style={{ touchAction: 'manipulation' }}
           onWheel={handleWheel}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
