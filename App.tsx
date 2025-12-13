@@ -287,7 +287,10 @@ const App: React.FC = () => {
   };
 
   const handleWheel = (e: React.WheelEvent) => {
-    if (interactionMode === 'view') return; // Only allow in edit mode
+    // Always allow wheel zoom and auto-enter edit mode
+    if (interactionMode === 'view') {
+      enterEditMode();
+    }
     
     e.preventDefault();
     const delta = -e.deltaY * 0.001; // Smooth, precise control
@@ -336,7 +339,7 @@ const App: React.FC = () => {
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (e.touches.length === 2 && touchStartDist.current !== null && interactionMode === 'edit') {
+    if (e.touches.length === 2 && touchStartDist.current !== null) {
       e.preventDefault(); // Prevent page scroll and bounce
       
       const dist = Math.hypot(
