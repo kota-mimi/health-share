@@ -470,9 +470,18 @@ const App: React.FC = () => {
   const currentBg = BACKGROUNDS[bgIndex];
   const ui = isJapanese ? UI_TEXT.ja : UI_TEXT.en;
   
-  // 高速画像保存・共有機能（最適化版）
+  // 🚀 直接共有対応画像保存・共有機能
   const handleSaveAndShare = async () => {
-    console.log('⚡ 高速保存・共有ボタンがクリックされました');
+    console.log('🚀 画像保存・共有ボタンがクリックされました');
+    
+    // 環境デバッグ情報
+    console.log('🔍 環境情報:', {
+      userAgent: navigator.userAgent,
+      hasWebShare: !!navigator.share,
+      canShare: !!navigator.canShare,
+      touchSupport: 'ontouchstart' in window,
+      maxTouchPoints: navigator.maxTouchPoints
+    });
     
     const cardElement = cardRef.current;
     if (!cardElement) {
@@ -514,30 +523,55 @@ const App: React.FC = () => {
       const dateStr = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
       const fileName = `健康記録_${dateStr}.png`;
       
-      // モバイル・デスクトップ分岐処理
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      // 📱 モバイル判定：より正確な検出
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                       ('ontouchstart' in window) || 
+                       (navigator.maxTouchPoints > 0);
       
+      // 📱 モバイル環境での直接共有（保存ステップなし）
       if (isMobile && navigator.share) {
-        // 📱 モバイル: 直接共有（保存スキップ）
-        console.log('📱 モバイル環境: 直接共有を試行');
+        console.log('📱 モバイル環境: 直接共有ダイアログを表示');
         if (buttonElement) buttonElement.textContent = '共有準備中...';
         
         try {
+          // 画像データをBlobに変換
           const response = await fetch(dataUrl);
           const blob = await response.blob();
           const file = new File([blob], fileName, { type: 'image/png' });
           
+          console.log('📱 ファイルサイズ:', Math.round(blob.size / 1024) + 'KB');
+          
+          // Web Share API対応チェック（より詳細）
           if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            console.log('📱 Web Share API対応確認済み - 直接共有実行');
+            
             await navigator.share({
               title: '今日の健康記録 - ヘルシーくん',
-              text: '今日の健康データを共有します！',
+              text: '今日の健康データを共有します！🏃‍♂️📊',
               files: [file]
             });
-            console.log('✅ 直接共有成功');
-            return; // 成功したら終了
+            
+            console.log('✅ 直接共有成功 - ダイアログ表示完了');
+            
+            // 成功時はここで終了（保存なし）
+            if (buttonElement) {
+              buttonElement.textContent = '共有完了！';
+              setTimeout(() => {
+                buttonElement.textContent = originalText;
+              }, 2000);
+            }
+            return;
+            
+          } else {
+            console.log('⚠️ Web Share API非対応またはファイル共有未サポート');
+            throw new Error('Web Share API not supported for files');
           }
+          
         } catch (shareError) {
-          console.log('⚠️ 直接共有失敗、ダウンロードにフォールバック:', shareError.message);
+          console.log('⚠️ 直接共有失敗:', shareError.message);
+          console.log('📥 フォールバック: ダウンロード方式に切り替え');
+          
+          // 失敗時はダウンロードにフォールバック
         }
       }
       
@@ -557,9 +591,9 @@ const App: React.FC = () => {
       
       // 環境別成功メッセージ
       if (isMobile) {
-        alert('健康記録を保存しました！\nファイルアプリや写真アプリから共有できます。');
+        alert('📱 健康記録を保存しました！\n写真アプリから共有してください。\n\n💡 次回は直接共有ダイアログが表示されます。');
       } else {
-        alert('健康記録を保存しました！\nダウンロードフォルダを確認してください。');
+        alert('💻 健康記録をダウンロードしました！\nダウンロードフォルダから共有できます。');
       }
       
     } catch (error) {
