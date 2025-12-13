@@ -173,19 +173,19 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
         </>
       )}
 
-      {/* Draggable & Scalable Content Layer (Entire Block) */}
+      {/* Draggable & Scalable Content Layer (Health Data Only) */}
       <Draggable
         nodeRef={contentRef}
         position={{ x: layoutConfig.x, y: layoutConfig.y }}
         onStop={(_e, data) => onLayoutChange && onLayoutChange(data.x, data.y)}
         disabled={!isEditing}
-        scale={globalScale}
       >
         <div 
           ref={contentRef}
-          className={`absolute top-0 left-0 w-full h-full p-4 sm:p-6 origin-center transition-transform duration-75 ease-out ${isEditing ? 'cursor-move ring-1 ring-white/20' : ''}`}
+          className={`absolute top-0 left-0 w-full h-full p-4 sm:p-6 origin-center transition-transform duration-200 ease-out ${isEditing ? 'cursor-move ring-1 ring-white/20' : ''}`}
           style={{
-             transform: `scale(${globalScale})`
+             transform: `scale(${globalScale})`,
+             transformOrigin: 'center center'
           }}
         >
           {/* Inner Flex Container */}
