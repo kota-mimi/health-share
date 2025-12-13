@@ -470,9 +470,9 @@ const App: React.FC = () => {
   const currentBg = BACKGROUNDS[bgIndex];
   const ui = isJapanese ? UI_TEXT.ja : UI_TEXT.en;
   
-  // 画像保存・共有機能（本番対応版）
+  // 高速画像保存・共有機能（最適化版）
   const handleSaveAndShare = async () => {
-    console.log('💾 保存・共有ボタンがクリックされました');
+    console.log('⚡ 高速保存・共有ボタンがクリックされました');
     
     const cardElement = cardRef.current;
     if (!cardElement) {
@@ -482,111 +482,47 @@ const App: React.FC = () => {
     }
 
     // ローディング表示
-    const originalText = '保存 / 共有';
-    const buttonElement = document.querySelector('.save-share-button');
+    const buttonElement = document.querySelector('.save-share-button span');
+    const originalText = buttonElement?.textContent || '保存 / 共有';
     if (buttonElement) {
-      buttonElement.textContent = '処理中...';
+      buttonElement.textContent = '変換中...';
     }
 
     try {
-      console.log('🖼️ HTML要素を画像に変換開始...');
+      console.log('🚀 高速画像変換開始...');
       
-      // 複数の設定でリトライ機能
-      let dataUrl;
-      const configs = [
-        // 高品質設定
-        { 
-          quality: 1.0, 
-          pixelRatio: 2, 
-          backgroundColor: '#ffffff',
-          useCORS: true,
-          allowTaint: true
+      // 最適化設定（速度優先）
+      const config = {
+        quality: 0.95, // 高品質維持しつつ速度重視
+        pixelRatio: 1.5, // 適度な解像度
+        backgroundColor: '#ffffff',
+        style: {
+          // パフォーマンス最適化
+          transform: 'scale(1)',
+          transformOrigin: 'top left'
         },
-        // 標準設定（フォールバック）
-        { 
-          quality: 0.9, 
-          pixelRatio: 1, 
-          backgroundColor: '#ffffff',
-          useCORS: true
-        },
-        // 最低限設定（最終フォールバック）
-        { 
-          quality: 0.8, 
-          pixelRatio: 1
-        }
-      ];
+        // 高速化オプション
+        cacheBust: false,
+        includeQueryParams: false
+      };
 
-      for (let i = 0; i < configs.length; i++) {
-        try {
-          console.log(`🔄 設定${i + 1}で画像生成試行中...`);
-          dataUrl = await htmlToImage.toPng(cardElement, configs[i]);
-          console.log(`✅ 設定${i + 1}で画像生成成功`);
-          break;
-        } catch (configError) {
-          console.warn(`⚠️ 設定${i + 1}で失敗:`, configError);
-          if (i === configs.length - 1) throw configError;
-        }
-      }
-
-      if (!dataUrl) {
-        throw new Error('画像の生成に失敗しました');
-      }
+      const dataUrl = await htmlToImage.toPng(cardElement, config);
+      console.log('✅ 画像変換完了（高速）');
       
-      // ファイル名生成（環境対応）
+      // ファイル名生成（シンプル化）
       const now = new Date();
       const dateStr = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
       const fileName = `健康記録_${dateStr}.png`;
       
-      console.log('📁 ダウンロード開始...', fileName);
+      // モバイル・デスクトップ分岐処理
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
       
-      // 画像をダウンロード（ブラウザ互換性対応）
-      try {
-        const link = document.createElement('a');
-        link.download = fileName;
-        link.href = dataUrl;
-        link.style.display = 'none';
-        document.body.appendChild(link);
+      if (isMobile && navigator.share) {
+        // 📱 モバイル: 直接共有（保存スキップ）
+        console.log('📱 モバイル環境: 直接共有を試行');
+        if (buttonElement) buttonElement.textContent = '共有準備中...';
         
-        // クリックイベントの強制実行
-        if (link.click) {
-          link.click();
-        } else {
-          // 古いブラウザ対応
-          const event = new MouseEvent('click', {
-            view: window,
-            bubbles: true,
-            cancelable: true
-          });
-          link.dispatchEvent(event);
-        }
-        
-        document.body.removeChild(link);
-        console.log('✅ ダウンロード成功');
-        
-        // 成功メッセージ
-        alert('健康記録カードを保存しました！');
-        
-      } catch (downloadError) {
-        console.error('❌ ダウンロードエラー:', downloadError);
-        
-        // フォールバック：新しいタブで表示
         try {
-          const newWindow = window.open();
-          if (newWindow) {
-            newWindow.document.write(`<img src="${dataUrl}" alt="健康記録" style="max-width: 100%; height: auto;" />`);
-            newWindow.document.title = fileName;
-            alert('新しいタブで画像を表示しました。右クリックで保存してください。');
-          }
-        } catch (tabError) {
-          console.error('❌ 新規タブ表示エラー:', tabError);
-          alert('ダウンロードに失敗しました。別のブラウザでお試しください。');
-        }
-      }
-      
-      // Web Share API対応（モバイル）
-      if (navigator.share) {
-        try {
-          console.log('📱 Web Share API利用可能 - 共有試行');
           const response = await fetch(dataUrl);
           const blob = await response.blob();
           const file = new File([blob], fileName, { type: 'image/png' });
@@ -597,44 +533,49 @@ const App: React.FC = () => {
               text: '今日の健康データを共有します！',
               files: [file]
             });
-            console.log('✅ 共有成功');
+            console.log('✅ 直接共有成功');
+            return; // 成功したら終了
           }
         } catch (shareError) {
-          console.log('ℹ️ 共有はスキップされました:', shareError.message);
+          console.log('⚠️ 直接共有失敗、ダウンロードにフォールバック:', shareError.message);
         }
+      }
+      
+      // 💻 デスクトップ または モバイル共有失敗時: ダウンロード
+      console.log('💻 ダウンロード実行');
+      if (buttonElement) buttonElement.textContent = 'ダウンロード中...';
+      
+      const link = document.createElement('a');
+      link.download = fileName;
+      link.href = dataUrl;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      console.log('✅ ダウンロード完了');
+      
+      // 環境別成功メッセージ
+      if (isMobile) {
+        alert('健康記録を保存しました！\nファイルアプリや写真アプリから共有できます。');
       } else {
-        console.log('ℹ️ Web Share APIは利用できません（デスクトップ環境）');
+        alert('健康記録を保存しました！\nダウンロードフォルダを確認してください。');
       }
       
     } catch (error) {
-      console.error('❌ 画像保存エラー:', error);
-      console.error('エラー詳細:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name
-      });
+      console.error('❌ 処理エラー:', error);
       
-      let errorMessage = '画像の保存に失敗しました。\n\n';
-      
-      // エラータイプ別メッセージ
-      if (error.message.includes('CORS')) {
-        errorMessage += '原因: 外部リソースへのアクセス制限\n対処: カスタム画像を削除してお試しください。';
-      } else if (error.message.includes('taint')) {
-        errorMessage += '原因: セキュリティ制限\n対処: ブラウザを更新してお試しください。';
-      } else if (error.message.includes('Permission')) {
-        errorMessage += '原因: 権限エラー\n対処: ブラウザの設定を確認してください。';
+      // 簡潔なエラー表示
+      if (error.message.includes('CORS') || error.message.includes('taint')) {
+        alert('画像の保存に失敗しました。\n\nカスタム画像を使用している場合は削除してお試しください。');
       } else {
-        errorMessage += `原因: ${error.message}\n対処: ページを再読み込みしてお試しください。`;
+        alert('画像の保存に失敗しました。\n\nページを再読み込みしてお試しください。');
       }
-      
-      alert(errorMessage);
     } finally {
-      // ボタンテキストを元に戻す
-      setTimeout(() => {
-        if (buttonElement) {
-          buttonElement.textContent = originalText;
-        }
-      }, 1000);
+      // 高速ボタン復帰
+      if (buttonElement) {
+        buttonElement.textContent = originalText;
+      }
     }
   };
 
