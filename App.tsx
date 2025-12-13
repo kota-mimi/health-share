@@ -81,17 +81,17 @@ const UI_TEXT = {
     simulate: 'Simulate New Day',
     accentColor: 'Accent Color',
     shareSave: 'Share / Save',
-    dragHint: 'Drag to Move • Pinch/Wheel to Zoom'
+    dragHint: 'Drag • Pinch • Double tap to exit'
   },
   ja: {
-    title: '1日の記録',
-    subtitle: '日報のデザインをカスタマイズできます。',
+    title: 'ヘルシーシェア プロ',
+    subtitle: 'プロ仕様の健康データ共有。ダブルタップで編集開始。',
     fontStyle: 'フォントスタイル',
     numberColor: '数字のカラー',
     finishEditing: '編集を完了',
     adjustLayout: 'レイアウト・拡大率の調整',
     zoomLevel: '拡大レベル',
-    zoomHint: 'カード上のスクロール操作などで拡大できます',
+    zoomHint: 'ピンチやホイールで拡大・縮小できます',
     resetLayout: '配置をリセット',
     background: '背景設定',
     theme: 'テーマ',
@@ -100,7 +100,7 @@ const UI_TEXT = {
     overlayDarkness: '画像の暗さ',
     accentColor: 'アクセント色',
     shareSave: '保存 / 共有',
-    dragHint: 'ドラッグで移動 • ホイールで拡大'
+    dragHint: 'ドラッグ • ピンチ • ダブルタップで終了'
   }
 };
 
@@ -215,15 +215,19 @@ const App: React.FC = () => {
   // Customization State
   const [customImage, setCustomImage] = useState<string | null>(null);
   const [overlayOpacity, setOverlayOpacity] = useState(0.7);
-  const [isEditing, setIsEditing] = useState(true); // Always in edit mode
+  // Enhanced interaction states
+  const [interactionMode, setInteractionMode] = useState<'view' | 'edit' | 'customize'>('view');
+  const [lastInteraction, setLastInteraction] = useState<number>(Date.now());
   const [layoutConfig, setLayoutConfig] = useState<LayoutConfig>(INITIAL_LAYOUT);
   const [globalScale, setGlobalScale] = useState(1);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // Touch state for pinch zoom and double tap
+  // Enhanced touch and interaction states
   const touchStartDist = useRef<number | null>(null);
   const startScale = useRef<number>(1);
   const lastTap = useRef<number>(0);
+  const touchStartPos = useRef<{ x: number; y: number } | null>(null);
+  const interactionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
 
   const handleThemeChange = () => {
@@ -247,22 +251,80 @@ const App: React.FC = () => {
     }
   };
 
+  // Enhanced interaction mode management
   const handleLayoutChange = (x: number, y: number) => {
     setLayoutConfig({ x, y });
+    setLastInteraction(Date.now());
+  };
+
+  // Auto-switch to view mode after inactivity (Strava-like)
+  React.useEffect(() => {
+    if (interactionMode === 'edit') {
+      if (interactionTimeoutRef.current) {
+        clearTimeout(interactionTimeoutRef.current);
+      }
+      
+      interactionTimeoutRef.current = setTimeout(() => {
+        setInteractionMode('view');
+      }, 3000); // 3 seconds of inactivity switches to view mode
+      
+      return () => {
+        if (interactionTimeoutRef.current) {
+          clearTimeout(interactionTimeoutRef.current);
+        }
+      };
+    }
+  }, [interactionMode, lastInteraction]);
+
+  // Intelligent mode switching
+  const enterEditMode = () => {
+    setInteractionMode('edit');
+    setLastInteraction(Date.now());
+  };
+
+  const exitEditMode = () => {
+    setInteractionMode('view');
   };
 
   const handleWheel = (e: React.WheelEvent) => {
-    // Always allow wheel zoom, regardless of edit mode
+    if (interactionMode === 'view') return; // Only allow in edit mode
+    
     e.preventDefault();
-    const delta = -e.deltaY * 0.002; // Increased sensitivity
-    const newScale = Math.min(3, Math.max(0.3, globalScale + delta)); // Extended range
+    const delta = -e.deltaY * 0.001; // Smooth, precise control
+    const newScale = Math.min(2.5, Math.max(0.5, globalScale + delta)); // Professional range
     setGlobalScale(newScale);
+    setLastInteraction(Date.now());
   };
 
-  // Enhanced Pinch Zoom for Mobile
+  // Professional-grade touch interaction system
   const handleTouchStart = (e: React.TouchEvent) => {
-    if (e.touches.length === 2) {
-      // Pinch zoom with 2 fingers
+    const touch = e.touches[0];
+    touchStartPos.current = { x: touch.clientX, y: touch.clientY };
+    
+    if (e.touches.length === 1) {
+      // Single tap - potential mode switch
+      const now = Date.now();
+      const isQuickTap = now - lastTap.current < 300;
+      
+      if (isQuickTap) {
+        // Double tap detected - smart mode switching
+        if (interactionMode === 'view') {
+          enterEditMode();
+        } else {
+          exitEditMode();
+        }
+        // Reset scale and position on double tap
+        setGlobalScale(1);
+        setLayoutConfig(INITIAL_LAYOUT);
+      }
+      
+      lastTap.current = now;
+    } else if (e.touches.length === 2) {
+      // Pinch zoom - enter edit mode automatically
+      if (interactionMode === 'view') {
+        enterEditMode();
+      }
+      
       e.preventDefault();
       const dist = Math.hypot(
         e.touches[0].clientX - e.touches[1].clientX,
@@ -274,7 +336,7 @@ const App: React.FC = () => {
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (e.touches.length === 2 && touchStartDist.current !== null) {
+    if (e.touches.length === 2 && touchStartDist.current !== null && interactionMode === 'edit') {
       e.preventDefault(); // Prevent page scroll and bounce
       
       const dist = Math.hypot(
@@ -283,8 +345,12 @@ const App: React.FC = () => {
       );
       
       const scaleFactor = dist / touchStartDist.current;
-      const newScale = Math.min(3, Math.max(0.3, startScale.current * scaleFactor)); // Extended range
+      // Professional scaling with smooth curves
+      const rawScale = startScale.current * scaleFactor;
+      const newScale = Math.min(2.5, Math.max(0.5, rawScale));
+      
       setGlobalScale(newScale);
+      setLastInteraction(Date.now());
     }
   };
 
@@ -293,15 +359,10 @@ const App: React.FC = () => {
       touchStartDist.current = null;
     }
     
-    // Double tap to reset
-    const now = Date.now();
-    const DOUBLE_TAP_DELAY = 300;
-    if (e.touches.length === 0 && now - lastTap.current < DOUBLE_TAP_DELAY) {
-      // Reset layout and scale
-      setLayoutConfig(INITIAL_LAYOUT);
-      setGlobalScale(1);
+    // Handle tap completion for mode switching (handled in touchStart)
+    if (e.touches.length === 0) {
+      touchStartPos.current = null;
     }
-    lastTap.current = now;
   };
 
   const currentBg = BACKGROUNDS[bgIndex];
@@ -313,14 +374,23 @@ const App: React.FC = () => {
         
         {/* The Card Component Area */}
         <div 
-          className="relative group"
+          className={`relative group transition-all duration-500 ${
+            interactionMode === 'edit' 
+              ? 'scale-[1.02] drop-shadow-2xl' 
+              : 'hover:scale-[1.01]'
+          }`}
           style={{ touchAction: 'manipulation' }}
           onWheel={handleWheel}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
-          <div className="absolute -inset-1 bg-gradient-to-r from-zinc-700 to-zinc-800 rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+          {/* Professional glow effect */}
+          <div className={`absolute -inset-1 bg-gradient-to-r rounded-lg blur transition-all duration-700 ${
+            interactionMode === 'edit'
+              ? 'from-blue-500/30 to-purple-500/30 opacity-75 animate-pulse'
+              : 'from-zinc-700 to-zinc-800 opacity-25 group-hover:opacity-50'
+          }`}></div>
           <div className="relative">
              <DailyLogCard 
                data={data} 
@@ -335,15 +405,25 @@ const App: React.FC = () => {
                overlayOpacity={overlayOpacity}
                layoutConfig={layoutConfig}
                onLayoutChange={handleLayoutChange}
-               isEditing={isEditing}
+               isEditing={interactionMode === 'edit'}
                globalScale={globalScale}
                fontStyle={fontStyle}
                numberColor={numberColor}
              />
           </div>
-          {isEditing && (
-            <div className="absolute top-4 right-4 bg-blue-600 text-white text-xs px-2 py-1 rounded shadow animate-pulse pointer-events-none z-50">
-              {ui.dragHint}
+          {/* Professional interaction indicators */}
+          {interactionMode === 'edit' && (
+            <div className="absolute top-4 right-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm pointer-events-none z-50 animate-in slide-in-from-top-2 duration-300">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                {ui.dragHint}
+              </div>
+            </div>
+          )}
+          
+          {interactionMode === 'view' && (
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/60 text-white text-xs px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm pointer-events-none z-50">
+              {isJapanese ? 'ダブルタップで編集' : 'Double tap to edit'}
             </div>
           )}
         </div>
