@@ -24,14 +24,6 @@ export const StatBar: React.FC<StatBarProps> = ({
 }) => {
   const percentage = Math.min(100, Math.max(0, (current / target) * 100));
   
-  // デバッグ: StatBarに渡されたデータ確認
-  console.log(`🔍 StatBar [${label}]:`, { current, target, percentage });
-  
-  // 炭水化物の場合だけアラート
-  if (label === 'Carbs' || label === '炭水化物') {
-    alert(`炭水化物StatBar:\ncurrent: ${current}\ntarget: ${target}\npercentage: ${percentage}%`);
-  }
-  
   // Create segments for the digital gauge look
   const totalSegments = 24;
   const filledSegments = Math.round((percentage / 100) * totalSegments);
