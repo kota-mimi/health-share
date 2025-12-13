@@ -470,51 +470,171 @@ const App: React.FC = () => {
   const currentBg = BACKGROUNDS[bgIndex];
   const ui = isJapanese ? UI_TEXT.ja : UI_TEXT.en;
   
-  // 画像保存・共有機能
+  // 画像保存・共有機能（本番対応版）
   const handleSaveAndShare = async () => {
+    console.log('💾 保存・共有ボタンがクリックされました');
+    
     const cardElement = cardRef.current;
     if (!cardElement) {
-      alert('カードが見つかりません');
+      console.error('❌ カード要素が見つかりません');
+      alert('カードが見つかりません。ページを再読み込みしてお試しください。');
       return;
     }
 
+    // ローディング表示
+    const originalText = '保存 / 共有';
+    const buttonElement = document.querySelector('.save-share-button');
+    if (buttonElement) {
+      buttonElement.textContent = '処理中...';
+    }
+
     try {
-      // HTML要素を画像に変換
-      const dataUrl = await htmlToImage.toPng(cardElement, {
-        quality: 1.0,
-        pixelRatio: 2, // 高解像度
-        backgroundColor: '#ffffff'
-      });
+      console.log('🖼️ HTML要素を画像に変換開始...');
       
-      // 画像をダウンロード
-      const link = document.createElement('a');
-      link.download = `健康記録_${new Date().toLocaleDateString('ja-JP').replace(/\//g, '-')}.png`;
-      link.href = dataUrl;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      // Web Share API が使用可能な場合は共有も可能にする
-      if (navigator.share && navigator.canShare) {
-        // dataUrlをBlobに変換
-        const response = await fetch(dataUrl);
-        const blob = await response.blob();
-        const file = new File([blob], `健康記録_${new Date().toLocaleDateString('ja-JP').replace(/\//g, '-')}.png`, { type: 'image/png' });
-        
+      // 複数の設定でリトライ機能
+      let dataUrl;
+      const configs = [
+        // 高品質設定
+        { 
+          quality: 1.0, 
+          pixelRatio: 2, 
+          backgroundColor: '#ffffff',
+          useCORS: true,
+          allowTaint: true
+        },
+        // 標準設定（フォールバック）
+        { 
+          quality: 0.9, 
+          pixelRatio: 1, 
+          backgroundColor: '#ffffff',
+          useCORS: true
+        },
+        // 最低限設定（最終フォールバック）
+        { 
+          quality: 0.8, 
+          pixelRatio: 1
+        }
+      ];
+
+      for (let i = 0; i < configs.length; i++) {
         try {
-          await navigator.share({
-            title: '今日の健康記録 - ヘルシーくん',
-            text: '今日の健康データを共有します！',
-            files: [file]
+          console.log(`🔄 設定${i + 1}で画像生成試行中...`);
+          dataUrl = await htmlToImage.toPng(cardElement, configs[i]);
+          console.log(`✅ 設定${i + 1}で画像生成成功`);
+          break;
+        } catch (configError) {
+          console.warn(`⚠️ 設定${i + 1}で失敗:`, configError);
+          if (i === configs.length - 1) throw configError;
+        }
+      }
+
+      if (!dataUrl) {
+        throw new Error('画像の生成に失敗しました');
+      }
+      
+      // ファイル名生成（環境対応）
+      const now = new Date();
+      const dateStr = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
+      const fileName = `健康記録_${dateStr}.png`;
+      
+      console.log('📁 ダウンロード開始...', fileName);
+      
+      // 画像をダウンロード（ブラウザ互換性対応）
+      try {
+        const link = document.createElement('a');
+        link.download = fileName;
+        link.href = dataUrl;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        
+        // クリックイベントの強制実行
+        if (link.click) {
+          link.click();
+        } else {
+          // 古いブラウザ対応
+          const event = new MouseEvent('click', {
+            view: window,
+            bubbles: true,
+            cancelable: true
           });
-        } catch (shareError) {
-          console.log('共有がキャンセルされました');
+          link.dispatchEvent(event);
+        }
+        
+        document.body.removeChild(link);
+        console.log('✅ ダウンロード成功');
+        
+        // 成功メッセージ
+        alert('健康記録カードを保存しました！');
+        
+      } catch (downloadError) {
+        console.error('❌ ダウンロードエラー:', downloadError);
+        
+        // フォールバック：新しいタブで表示
+        try {
+          const newWindow = window.open();
+          if (newWindow) {
+            newWindow.document.write(`<img src="${dataUrl}" alt="健康記録" style="max-width: 100%; height: auto;" />`);
+            newWindow.document.title = fileName;
+            alert('新しいタブで画像を表示しました。右クリックで保存してください。');
+          }
+        } catch (tabError) {
+          console.error('❌ 新規タブ表示エラー:', tabError);
+          alert('ダウンロードに失敗しました。別のブラウザでお試しください。');
         }
       }
       
+      // Web Share API対応（モバイル）
+      if (navigator.share) {
+        try {
+          console.log('📱 Web Share API利用可能 - 共有試行');
+          const response = await fetch(dataUrl);
+          const blob = await response.blob();
+          const file = new File([blob], fileName, { type: 'image/png' });
+          
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              title: '今日の健康記録 - ヘルシーくん',
+              text: '今日の健康データを共有します！',
+              files: [file]
+            });
+            console.log('✅ 共有成功');
+          }
+        } catch (shareError) {
+          console.log('ℹ️ 共有はスキップされました:', shareError.message);
+        }
+      } else {
+        console.log('ℹ️ Web Share APIは利用できません（デスクトップ環境）');
+      }
+      
     } catch (error) {
-      console.error('画像の保存に失敗しました:', error);
-      alert('画像の保存に失敗しました。もう一度お試しください。');
+      console.error('❌ 画像保存エラー:', error);
+      console.error('エラー詳細:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+      
+      let errorMessage = '画像の保存に失敗しました。\n\n';
+      
+      // エラータイプ別メッセージ
+      if (error.message.includes('CORS')) {
+        errorMessage += '原因: 外部リソースへのアクセス制限\n対処: カスタム画像を削除してお試しください。';
+      } else if (error.message.includes('taint')) {
+        errorMessage += '原因: セキュリティ制限\n対処: ブラウザを更新してお試しください。';
+      } else if (error.message.includes('Permission')) {
+        errorMessage += '原因: 権限エラー\n対処: ブラウザの設定を確認してください。';
+      } else {
+        errorMessage += `原因: ${error.message}\n対処: ページを再読み込みしてお試しください。`;
+      }
+      
+      alert(errorMessage);
+    } finally {
+      // ボタンテキストを元に戻す
+      setTimeout(() => {
+        if (buttonElement) {
+          buttonElement.textContent = originalText;
+        }
+      }, 1000);
     }
   };
 
@@ -822,7 +942,7 @@ const App: React.FC = () => {
 
 
              <button 
-              className="w-full flex items-center justify-center gap-3 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 shadow-lg"
+              className="save-share-button w-full flex items-center justify-center gap-3 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 shadow-lg"
               onClick={handleSaveAndShare}
             >
               <Download size={16} />
