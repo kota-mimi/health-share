@@ -150,9 +150,11 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
   return (
     <div 
       id={id}
-      className={`w-[375px] h-[640px] ${!customImage ? bgClass : 'bg-black'} relative overflow-hidden flex flex-col select-none shadow-2xl transition-colors duration-500`}
+      className={`w-[300px] h-[480px] sm:w-[375px] sm:h-[640px] ${!customImage ? bgClass : 'bg-black'} relative overflow-hidden flex flex-col select-none shadow-2xl transition-colors duration-500`}
       style={{
-        boxShadow: '0 0 50px -12px rgba(0,0,0,0.5)'
+        boxShadow: '0 0 50px -12px rgba(0,0,0,0.5)',
+        maxWidth: '90vw',
+        maxHeight: '85vh'
       }}
     >
       {/* Background Layer (Static) */}
@@ -181,7 +183,7 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
       >
         <div 
           ref={contentRef}
-          className={`absolute top-0 left-0 w-full h-full p-6 origin-center transition-transform duration-75 ease-out ${isEditing ? 'cursor-move ring-1 ring-white/20' : ''}`}
+          className={`absolute top-0 left-0 w-full h-full p-4 sm:p-6 origin-center transition-transform duration-75 ease-out ${isEditing ? 'cursor-move ring-1 ring-white/20' : ''}`}
           style={{
              transform: `scale(${globalScale})`
           }}
@@ -190,31 +192,31 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
           <div className="flex flex-col h-full pointer-events-none">
             
             {/* Header */}
-            <header className={`flex justify-between items-start mb-8 border-b ${styles.border} pb-4`}>
+            <header className={`flex justify-between items-start mb-4 sm:mb-8 border-b ${styles.border} pb-2 sm:pb-4`}>
               <div className="flex flex-col">
-                <span className={`text-[10px] uppercase mb-1 ${fonts.label} ${styles.textSecondary}`}>{t.date}</span>
-                <h1 className={`text-3xl ${fonts.val} font-bold tracking-tight ${numColorClass}`}>{formatDate(data.date)}</h1>
+                <span className={`text-[8px] sm:text-[10px] uppercase mb-1 ${fonts.label} ${styles.textSecondary}`}>{t.date}</span>
+                <h1 className={`text-2xl sm:text-3xl ${fonts.val} font-bold tracking-tight ${numColorClass}`}>{formatDate(data.date)}</h1>
               </div>
             </header>
 
             {/* Hero Metrics (Weight & Calories) */}
-            <div className="grid grid-cols-2 gap-4 mb-10">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-10">
               {/* Weight */}
               <div className="flex flex-col">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className={`text-[10px] uppercase ${fonts.label} ${styles.textSecondary}`}>{t.weight}</span>
+                    <span className={`text-[8px] sm:text-[10px] uppercase ${fonts.label} ${styles.textSecondary}`}>{t.weight}</span>
                   </div>
                   
                   {hideWeight ? (
                     <div className="flex items-baseline gap-1">
-                      <div className={`text-6xl ${fonts.val} font-bold tracking-tighter flex items-center h-[60px] ${styles.textTertiary}`}>
-                        <span className="text-4xl">●●●</span>
+                      <div className={`text-3xl sm:text-6xl ${fonts.val} font-bold tracking-tighter flex items-center h-[40px] sm:h-[60px] ${styles.textTertiary}`}>
+                        <span className="text-2xl sm:text-4xl">●●●</span>
                       </div>
                     </div>
                   ) : (
                     <div className="flex items-baseline gap-1">
-                      <span className={`text-6xl ${fonts.val} font-bold tracking-tighter ${numColorClass}`}>{data.weight.current}</span>
-                      <span className={`text-sm font-bold ${fonts.val} ${effectiveIsDarkMode ? 'text-white/60' : 'text-zinc-500'}`}>KG</span>
+                      <span className={`text-3xl sm:text-6xl ${fonts.val} font-bold tracking-tighter ${numColorClass}`}>{data.weight.current}</span>
+                      <span className={`text-xs sm:text-sm font-bold ${fonts.val} ${effectiveIsDarkMode ? 'text-white/60' : 'text-zinc-500'}`}>KG</span>
                     </div>
                   )}
                   
@@ -234,21 +236,21 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
               {/* Calories */}
               <div className="flex flex-col items-end">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className={`text-[10px] uppercase ${fonts.label} ${styles.textSecondary}`}>{t.intake}</span>
+                    <span className={`text-[8px] sm:text-[10px] uppercase ${fonts.label} ${styles.textSecondary}`}>{t.intake}</span>
                   </div>
                   <div className="flex items-baseline gap-1">
-                    <span className={`text-6xl ${fonts.val} font-bold tracking-tighter ${numColorClass}`}>{data.calories.current}</span>
+                    <span className={`text-3xl sm:text-6xl ${fonts.val} font-bold tracking-tighter ${numColorClass}`}>{data.calories.current}</span>
                   </div>
-                  <div className={`flex items-center gap-1 mt-1 text-sm ${fonts.val} ${styles.textSecondary}`}>
+                  <div className={`flex items-center gap-1 mt-1 text-xs sm:text-sm ${fonts.val} ${styles.textSecondary}`}>
                     <span>/ {data.calories.target} KCAL</span>
                   </div>
                 </div>
             </div>
 
             {/* PFC Visualizer */}
-            <div className="mb-8">
-                <div className="flex justify-between items-end mb-4">
-                  <span className={`text-[10px] uppercase ${fonts.label} ${styles.textMuted}`}>{t.macroTitle}</span>
+            <div className="mb-4 sm:mb-8">
+                <div className="flex justify-between items-end mb-2 sm:mb-4">
+                  <span className={`text-[8px] sm:text-[10px] uppercase ${fonts.label} ${styles.textMuted}`}>{t.macroTitle}</span>
                 </div>
                 <div className="mt-2">
                   <StatBar 
@@ -290,26 +292,26 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
             <div>
                 <div className="flex items-start pt-2">
                   {/* Time */}
-                  <div className="flex-1 flex flex-col pr-6 border-r border-dashed border-zinc-700/50">
-                      <div className={`text-[10px] tracking-wider uppercase mb-1 ${fonts.label} ${styles.textSecondary}`}>{t.minutes}</div>
-                      <div className={`text-5xl ${fonts.val} font-bold leading-none ${numColorClass}`}>{data.exercise.minutes}</div>
+                  <div className="flex-1 flex flex-col pr-4 sm:pr-6 border-r border-dashed border-zinc-700/50">
+                      <div className={`text-[8px] sm:text-[10px] tracking-wider uppercase mb-1 ${fonts.label} ${styles.textSecondary}`}>{t.minutes}</div>
+                      <div className={`text-3xl sm:text-5xl ${fonts.val} font-bold leading-none ${numColorClass}`}>{data.exercise.minutes}</div>
                   </div>
 
                   {/* Burned */}
-                  <div className="flex-1 flex flex-col pl-8">
-                      <div className={`text-[10px] tracking-wider uppercase mb-1 ${fonts.label} ${styles.textSecondary}`}>{t.burned}</div>
-                      <div className={`text-5xl ${fonts.val} font-bold leading-none ${numColorClass}`}>{data.exercise.caloriesBurned}</div>
+                  <div className="flex-1 flex flex-col pl-4 sm:pl-8">
+                      <div className={`text-[8px] sm:text-[10px] tracking-wider uppercase mb-1 ${fonts.label} ${styles.textSecondary}`}>{t.burned}</div>
+                      <div className={`text-3xl sm:text-5xl ${fonts.val} font-bold leading-none ${numColorClass}`}>{data.exercise.caloriesBurned}</div>
                   </div>
                 </div>
               </div>
 
             {/* Footer */}
-            <footer className={`mt-auto pt-4 border-t ${styles.border} flex justify-between items-center opacity-50`}>
-              <div className={`text-[9px] uppercase tracking-widest flex items-center gap-1.5 ${styles.footer}`}>
+            <footer className={`mt-auto pt-2 sm:pt-4 border-t ${styles.border} flex justify-between items-center opacity-50`}>
+              <div className={`text-[7px] sm:text-[9px] uppercase tracking-widest flex items-center gap-1 sm:gap-1.5 ${styles.footer}`}>
                 <div className={`w-1 h-1 rounded-full ${effectiveIsDarkMode ? 'bg-white/60' : 'bg-zinc-400'}`} />
                 {t.hidden}
               </div>
-              <div className={`text-[9px] ${fonts.val} flex items-center gap-1.5 ${styles.footer}`}>
+              <div className={`text-[7px] sm:text-[9px] ${fonts.val} flex items-center gap-1 sm:gap-1.5 ${styles.footer}`}>
                 {t.powered}
               </div>
             </footer>
