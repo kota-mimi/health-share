@@ -110,24 +110,60 @@ const App: React.FC = () => {
   
   // ブラウザ環境でURLパラメータからデータを読み込み
   useEffect(() => {
-    const loadUserData = () => {
+    const loadUserData = async () => {
       try {
         if (typeof window === 'undefined') return;
         
         const urlParams = new URLSearchParams(window.location.search);
+        const secureParam = urlParams.get('secure');
+        const timestampParam = urlParams.get('t');
+        const userIdParam = urlParams.get('u');
+        
+        // レガシーサポート（古いdata形式）
         const dataParam = urlParams.get('data');
         
-        if (dataParam) {
-          console.log('🔍 Raw URL data parameter:', dataParam);
+        let decodedData;
+        
+        if (secureParam && timestampParam && userIdParam) {
+          console.log('🔒 Processing secure encrypted data...');
           
-          const decodedData = JSON.parse(decodeURIComponent(dataParam));
-          console.log('📊 Received user data:', decodedData);
-          console.log('📊 Specific values:', {
-            carbs: decodedData.carbs,
-            exerciseTime: decodedData.exerciseTime,
-            exerciseBurned: decodedData.exerciseBurned
+          const { decryptData, validateSecureData } = await import('./lib/encryption');
+          
+          // セキュアデータを復号化
+          const timestamp = parseInt(timestampParam);
+          const secureData = await decryptData(decodeURIComponent(secureParam), userIdParam, timestamp);
+          
+          console.log('🔓 Decrypted secure data:', {
+            userId: secureData.userId,
+            sessionId: secureData.sessionId,
+            expiresAt: new Date(secureData.expiresAt).toISOString()
           });
           
+          // データ有効性をチェック
+          if (!validateSecureData(secureData)) {
+            throw new Error('無効または期限切れのデータです');
+          }
+          
+          // ユーザー分離チェック
+          if (secureData.userId !== userIdParam) {
+            throw new Error('ユーザー認証に失敗しました');
+          }
+          
+          decodedData = secureData.data;
+          console.log('📊 Validated secure user data:', decodedData);
+          
+        } else if (dataParam) {
+          console.log('⚠️ Using legacy unsecure data format');
+          
+          decodedData = JSON.parse(decodeURIComponent(dataParam));
+          console.log('📊 Received legacy user data:', decodedData);
+        } else {
+          console.log('ℹ️ No URL data found, using mock data');
+          return;
+        }
+        
+        // 共通のデータ変換処理
+        if (decodedData) {
           // Validate the decoded data has required properties
           if (typeof decodedData !== 'object' || decodedData === null) {
             console.warn('⚠️ Invalid data format received');
@@ -159,8 +195,6 @@ const App: React.FC = () => {
           
           console.log('✅ Processed user data:', userData);
           setData(userData);
-        } else {
-          console.log('ℹ️ No URL data found, using mock data');
         }
       } catch (error) {
         console.error('❌ Error parsing URL data:', error);
