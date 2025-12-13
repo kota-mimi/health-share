@@ -121,7 +121,6 @@ const App: React.FC = () => {
           console.log('🔍 Raw URL data parameter:', dataParam);
           
           const decodedData = JSON.parse(decodeURIComponent(dataParam));
-          alert(`データを受信しました！carbs: ${decodedData?.carbs || '不明'}`);
           console.log('📊 Received user data:', decodedData);
           console.log('📊 Specific values:', {
             carbs: decodedData.carbs,
