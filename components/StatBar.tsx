@@ -71,7 +71,11 @@ export const StatBar: React.FC<StatBarProps> = ({
           return (
             <div 
               key={i}
-              className={`flex-1 rounded-[1px] transition-all duration-300 ${isFilled ? colorClass.replace('text-', 'bg-') : (isDarkMode ? 'bg-zinc-700' : 'bg-zinc-300')}`}
+              className={`flex-1 rounded-[1px] transition-all duration-300 ${
+                isFilled 
+                  ? (colorClass === 'text-green-500' ? 'bg-green-500' : colorClass.replace('text-', 'bg-'))
+                  : (isDarkMode ? 'bg-zinc-700' : 'bg-zinc-300')
+              }`}
               style={{ 
                 opacity: isFilled ? 1 : undefined 
               }}
