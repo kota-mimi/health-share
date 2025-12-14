@@ -59,7 +59,7 @@ const NUMBER_COLORS = [
 ];
 
 const REFLECTION_ANSWERS = [
-  { id: 'custom', text: 'ひとこと (例: 今日は充実していた)', emoji: '✏️' },
+  { id: 'custom', text: 'ひとこと', emoji: '✏️' },
   { id: 'yes-absolutely', text: 'Yes, absolutely! ⭐', emoji: '⭐' },
   { id: 'pretty-good', text: 'Pretty good! 😊', emoji: '😊' },
   { id: 'it-was-okay', text: 'It was okay 😐', emoji: '😐' },
