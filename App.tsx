@@ -183,23 +183,23 @@ const App: React.FC = () => {
           const userData: DailyLogData = {
             date: new Date(decodedData.date || new Date()),
             weight: {
-              current: Number(decodedData.weight) || 0,
-              diff: Number(decodedData.weightDiff) || 0,
+              current: parseFloat(decodedData.weight) || 0,
+              diff: parseFloat(decodedData.weightDiff) || 0,
             },
             calories: {
-              current: Number(decodedData.calories) || 0,
-              target: Number(decodedData.caloriesTarget) || 2100,
+              current: parseInt(decodedData.calories) || 0,
+              target: parseInt(decodedData.caloriesTarget) || 2100,
             },
             pfc: {
-              p: { current: Number(decodedData.protein) || 0, target: 160, unit: 'g' },
-              f: { current: Number(decodedData.fat) || 0, target: 65, unit: 'g' },
-              c: { current: Number(decodedData.carbs) || 0, target: 240, unit: 'g' },
+              p: { current: parseFloat(decodedData.protein) || 0, target: 160, unit: 'g' },
+              f: { current: parseFloat(decodedData.fat) || 0, target: 65, unit: 'g' },
+              c: { current: parseFloat(decodedData.carbs) || 0, target: 240, unit: 'g' },
             },
             exercise: {
-              minutes: Number(decodedData.exerciseTime) || 0,
-              caloriesBurned: Number(decodedData.exerciseBurned) || 0,
+              minutes: parseInt(decodedData.exerciseTime) || 0,
+              caloriesBurned: parseInt(decodedData.exerciseBurned) || 0,
             },
-            achievementRate: Number(decodedData.achievementRate) || 0,
+            achievementRate: parseInt(decodedData.achievementRate) || 0,
           };
           
           console.log('✅ Processed user data:', userData);
@@ -214,6 +214,17 @@ const App: React.FC = () => {
     
     loadUserData();
   }, []);
+
+  // ローディング状態を追加
+  const [isDataLoading, setIsDataLoading] = useState(true);
+
+  // データ読み込み完了時にローディングを停止
+  useEffect(() => {
+    if (data && data !== MOCK_DATA) {
+      setIsDataLoading(false);
+    }
+  }, [data]);
+
   const [theme, setTheme] = useState<ThemeColor>('text-emerald-400' as ThemeColor);
   const [bgIndex, setBgIndex] = useState(1);
   const [isJapanese, setIsJapanese] = useState(true);
