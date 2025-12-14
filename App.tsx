@@ -508,35 +508,12 @@ const App: React.FC = () => {
   const currentBg = BACKGROUNDS[bgIndex];
   const ui = isJapanese ? UI_TEXT.ja : UI_TEXT.en;
   
-  // 🚀 直接共有対応画像保存・共有機能
+  // シンプルな画像保存機能
   const handleSaveAndShare = async () => {
-    console.log('🚀 画像保存・共有ボタンがクリックされました');
-    
-    // 環境デバッグ情報
-    console.log('🔍 環境情報:', {
-      userAgent: navigator.userAgent,
-      hasWebShare: !!navigator.share,
-      canShare: !!navigator.canShare,
-      touchSupport: 'ontouchstart' in window,
-      maxTouchPoints: navigator.maxTouchPoints
-    });
-    
     const cardElement = cardRef.current;
     if (!cardElement) {
-      console.error('❌ カード要素が見つかりません');
-      alert('カードが見つかりません。ページを再読み込みしてお試しください。');
       return;
     }
-
-    // デバッグ情報
-    console.log('🔍 カード要素情報:', {
-      element: cardElement,
-      tagName: cardElement.tagName,
-      className: cardElement.className,
-      children: cardElement.children.length,
-      clientWidth: cardElement.clientWidth,
-      clientHeight: cardElement.clientHeight
-    });
 
     // ローディング表示
     const buttonElement = document.querySelector('.save-share-button span');
@@ -546,103 +523,19 @@ const App: React.FC = () => {
     }
 
     try {
-      console.log('🚀 高速画像変換開始...');
-      
-      // 最適化設定（速度優先）
+      // シンプルな設定
       const config = {
-        quality: 0.95, // 高品質維持しつつ速度重視
-        pixelRatio: 1.5, // 適度な解像度
-        backgroundColor: '#ffffff',
-        style: {
-          // パフォーマンス最適化
-          transform: 'scale(1)',
-          transformOrigin: 'top left'
-        },
-        // 高速化オプション
-        cacheBust: false,
-        includeQueryParams: false
+        quality: 0.9,
+        pixelRatio: 2,
+        backgroundColor: '#ffffff'
       };
 
-      // 主要素とバックアップ要素を試行
-      let dataUrl;
-      try {
-        console.log('🔄 メイン要素での変換を試行...');
-        dataUrl = await htmlToImage.toPng(cardElement, config);
-        console.log('✅ 画像変換完了（メイン要素）');
-      } catch (primaryError) {
-        console.log('⚠️ メイン要素での変換失敗:', primaryError.message);
-        console.log('🔄 バックアップ要素での変換を試行...');
-        
-        // バックアップ: ID要素を使用
-        const shareCardElement = document.getElementById('share-card');
-        if (shareCardElement) {
-          dataUrl = await htmlToImage.toPng(shareCardElement, config);
-          console.log('✅ 画像変換完了（バックアップ要素）');
-        } else {
-          throw primaryError; // バックアップも失敗した場合は元のエラーを投げる
-        }
-      }
+      const dataUrl = await htmlToImage.toPng(cardElement, config);
       
-      // ファイル名生成（シンプル化）
+      // シンプルなダウンロード
       const now = new Date();
       const dateStr = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
       const fileName = `健康記録_${dateStr}.png`;
-      
-      // 📱 モバイル判定：より正確な検出
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
-                       ('ontouchstart' in window) || 
-                       (navigator.maxTouchPoints > 0);
-      
-      // 📱 モバイル環境での直接共有（保存ステップなし）
-      if (isMobile && navigator.share) {
-        console.log('📱 モバイル環境: 直接共有ダイアログを表示');
-        if (buttonElement) buttonElement.textContent = '共有準備中...';
-        
-        try {
-          // 画像データをBlobに変換
-          const response = await fetch(dataUrl);
-          const blob = await response.blob();
-          const file = new File([blob], fileName, { type: 'image/png' });
-          
-          console.log('📱 ファイルサイズ:', Math.round(blob.size / 1024) + 'KB');
-          
-          // Web Share API対応チェック（より詳細）
-          if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            console.log('📱 Web Share API対応確認済み - 直接共有実行');
-            
-            await navigator.share({
-              title: '今日の健康記録 - ヘルシーくん',
-              text: '今日の健康データを共有します！🏃‍♂️📊',
-              files: [file]
-            });
-            
-            console.log('✅ 直接共有成功 - ダイアログ表示完了');
-            
-            // 成功時はここで終了（保存なし）
-            if (buttonElement) {
-              buttonElement.textContent = '共有完了！';
-              setTimeout(() => {
-                buttonElement.textContent = originalText;
-              }, 2000);
-            }
-            return;
-            
-          } else {
-            console.log('⚠️ Web Share API非対応またはファイル共有未サポート');
-            throw new Error('Web Share API not supported for files');
-          }
-          
-        } catch (shareError) {
-          console.log('⚠️ 直接共有失敗:', shareError.message);
-          console.log('📥 フォールバック: ダウンロード方式に切り替え');
-          
-          // 失敗時はダウンロードにフォールバック
-        }
-      }
-      
-      // 💻 デスクトップ または モバイル共有失敗時: ダウンロード
-      console.log('💻 ダウンロード実行');
-      if (buttonElement) buttonElement.textContent = 'ダウンロード中...';
       
       const link = document.createElement('a');
       link.download = fileName;
@@ -651,36 +544,23 @@ const App: React.FC = () => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
-      console.log('✅ ダウンロード完了');
-      
-      // 環境別成功メッセージ
-      if (isMobile) {
-        alert('📱 健康記録を保存しました！\n写真アプリから共有してください。\n\n💡 次回は直接共有ダイアログが表示されます。');
-      } else {
-        alert('💻 健康記録をダウンロードしました！\nダウンロードフォルダから共有できます。');
+
+      // 成功メッセージ
+      if (buttonElement) {
+        buttonElement.textContent = '保存完了！';
+        setTimeout(() => {
+          buttonElement.textContent = originalText;
+        }, 2000);
       }
       
     } catch (error) {
-      console.error('❌ 処理エラー:', error);
-      console.error('❌ エラー詳細:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name
-      });
-      
-      // より詳細なエラー表示
-      if (error.message.includes('CORS') || error.message.includes('taint')) {
-        alert('画像の保存に失敗しました（CORS/セキュリティエラー）。\n\nカスタム画像を使用している場合は削除してお試しください。');
-      } else if (error.message.includes('Failed to execute')) {
-        alert('画像変換に失敗しました。\n\nページを再読み込みしてお試しください。\n\nエラー: ' + error.message.substring(0, 100));
-      } else {
-        alert('画像の保存に失敗しました。\n\nエラー: ' + error.message + '\n\nページを再読み込みしてお試しください。');
-      }
-    } finally {
-      // 高速ボタン復帰
+      console.error('❌ 保存エラー:', error);
+      // シンプルなエラー処理 - アラートは出さない
       if (buttonElement) {
-        buttonElement.textContent = originalText;
+        buttonElement.textContent = '保存失敗';
+        setTimeout(() => {
+          buttonElement.textContent = originalText;
+        }, 2000);
       }
     }
   };
