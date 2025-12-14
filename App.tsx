@@ -528,6 +528,16 @@ const App: React.FC = () => {
       return;
     }
 
+    // デバッグ情報
+    console.log('🔍 カード要素情報:', {
+      element: cardElement,
+      tagName: cardElement.tagName,
+      className: cardElement.className,
+      children: cardElement.children.length,
+      clientWidth: cardElement.clientWidth,
+      clientHeight: cardElement.clientHeight
+    });
+
     // ローディング表示
     const buttonElement = document.querySelector('.save-share-button span');
     const originalText = buttonElement?.textContent || '保存 / 共有';
@@ -553,8 +563,25 @@ const App: React.FC = () => {
         includeQueryParams: false
       };
 
-      const dataUrl = await htmlToImage.toPng(cardElement, config);
-      console.log('✅ 画像変換完了（高速）');
+      // 主要素とバックアップ要素を試行
+      let dataUrl;
+      try {
+        console.log('🔄 メイン要素での変換を試行...');
+        dataUrl = await htmlToImage.toPng(cardElement, config);
+        console.log('✅ 画像変換完了（メイン要素）');
+      } catch (primaryError) {
+        console.log('⚠️ メイン要素での変換失敗:', primaryError.message);
+        console.log('🔄 バックアップ要素での変換を試行...');
+        
+        // バックアップ: ID要素を使用
+        const shareCardElement = document.getElementById('share-card');
+        if (shareCardElement) {
+          dataUrl = await htmlToImage.toPng(shareCardElement, config);
+          console.log('✅ 画像変換完了（バックアップ要素）');
+        } else {
+          throw primaryError; // バックアップも失敗した場合は元のエラーを投げる
+        }
+      }
       
       // ファイル名生成（シンプル化）
       const now = new Date();
@@ -636,12 +663,19 @@ const App: React.FC = () => {
       
     } catch (error) {
       console.error('❌ 処理エラー:', error);
+      console.error('❌ エラー詳細:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
       
-      // 簡潔なエラー表示
+      // より詳細なエラー表示
       if (error.message.includes('CORS') || error.message.includes('taint')) {
-        alert('画像の保存に失敗しました。\n\nカスタム画像を使用している場合は削除してお試しください。');
+        alert('画像の保存に失敗しました（CORS/セキュリティエラー）。\n\nカスタム画像を使用している場合は削除してお試しください。');
+      } else if (error.message.includes('Failed to execute')) {
+        alert('画像変換に失敗しました。\n\nページを再読み込みしてお試しください。\n\nエラー: ' + error.message.substring(0, 100));
       } else {
-        alert('画像の保存に失敗しました。\n\nページを再読み込みしてお試しください。');
+        alert('画像の保存に失敗しました。\n\nエラー: ' + error.message + '\n\nページを再読み込みしてお試しください。');
       }
     } finally {
       // 高速ボタン復帰
