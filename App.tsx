@@ -110,7 +110,7 @@ const UI_TEXT = {
     overlayDarkness: '画像の暗さ',
     accentColor: 'アクセント色',
     shareSave: '共有',
-    dragHint: 'ドラッグ • ピンチで調整'
+    dragHint: 'ドラッグ • ピンチ • ダブルタップで終了'
   }
 };
 
