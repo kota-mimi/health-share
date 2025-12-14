@@ -115,7 +115,7 @@ const UI_TEXT = {
 };
 
 const App: React.FC = () => {
-  const [data, setData] = useState<DailyLogData>(MOCK_DATA);
+  const [data, setData] = useState<DailyLogData | null>(null);
   
   // ブラウザ環境でURLパラメータからデータを読み込み
   useEffect(() => {
@@ -168,6 +168,7 @@ const App: React.FC = () => {
           console.log('📊 Received legacy user data:', decodedData);
         } else {
           console.log('ℹ️ No URL data found, using mock data');
+          setData(MOCK_DATA);
           return;
         }
         
@@ -208,7 +209,7 @@ const App: React.FC = () => {
       } catch (error) {
         console.error('❌ Error parsing URL data:', error);
         console.log('🔄 Falling back to mock data');
-        // Don't throw - just continue with mock data
+        setData(MOCK_DATA);
       }
     };
     
@@ -640,8 +641,8 @@ const App: React.FC = () => {
     }
   };
 
-  // ローディング画面
-  if (isDataLoading) {
+  // ローディング画面またはデータなし
+  if (isDataLoading || !data) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
