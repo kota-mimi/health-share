@@ -536,17 +536,43 @@ const App: React.FC = () => {
 
       // カスタム画像がある場合の特別処理
       let dataUrl;
+      
+      // カスタム画像がある場合、画像の完全なロードを待つ
+      if (customImage) {
+        console.log('📸 カスタム画像検出 - ロード完了を待機中...');
+        await new Promise((resolve) => {
+          const img = cardElement.querySelector('img');
+          if (img) {
+            if (img.complete) {
+              resolve(true);
+            } else {
+              img.onload = () => resolve(true);
+              img.onerror = () => resolve(true);
+              // 最大3秒待機
+              setTimeout(() => resolve(true), 3000);
+            }
+          } else {
+            resolve(true);
+          }
+        });
+        console.log('✅ 画像ロード完了');
+      }
+      
       try {
+        console.log('🔄 画像変換開始...');
         dataUrl = await htmlToImage.toPng(cardElement, config);
+        console.log('✅ 画像変換成功');
       } catch (corsError) {
-        console.log('CORS エラー、フォールバック設定で再試行:', corsError);
+        console.log('⚠️ 1st試行失敗、フォールバック設定で再試行:', corsError);
         // フォールバック: より寛容な設定で再試行
         const fallbackConfig = {
           ...config,
           allowTaint: true,
-          useCORS: false
+          useCORS: false,
+          timeout: 30000 // 30秒タイムアウト
         };
         dataUrl = await htmlToImage.toPng(cardElement, fallbackConfig);
+        console.log('✅ フォールバック変換成功');
       }
       
       // ファイル名生成
