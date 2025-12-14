@@ -138,27 +138,37 @@ const App: React.FC = () => {
           
           const { decryptData, validateSecureData } = await import('./lib/encryption');
           
-          // セキュアデータを復号化
-          const timestamp = parseInt(timestampParam);
-          const secureData = await decryptData(decodeURIComponent(secureParam), userIdParam, timestamp);
-          
-          console.log('🔓 Decrypted secure data:', {
-            userId: secureData.userId,
-            sessionId: secureData.sessionId,
-            expiresAt: new Date(secureData.expiresAt).toISOString()
-          });
-          
-          // データ有効性をチェック
-          if (!validateSecureData(secureData)) {
-            throw new Error('無効または期限切れのデータです');
+          try {
+            // セキュアデータを復号化
+            const timestamp = parseInt(timestampParam);
+            const secureData = await decryptData(decodeURIComponent(secureParam), userIdParam, timestamp);
+            
+            console.log('🔓 Decrypted secure data:', {
+              userId: secureData.userId,
+              sessionId: secureData.sessionId,
+              expiresAt: new Date(secureData.expiresAt).toISOString()
+            });
+            
+            // データ有効性をチェック
+            if (!validateSecureData(secureData)) {
+              console.warn('⚠️ 無効または期限切れのデータです - MOCKデータを使用');
+              setData(MOCK_DATA);
+              return;
+            }
+            
+            // ユーザー分離チェック
+            if (secureData.userId !== userIdParam) {
+              console.warn('⚠️ ユーザー認証に失敗しました - MOCKデータを使用');
+              setData(MOCK_DATA);
+              return;
+            }
+            
+            decodedData = secureData.data;
+          } catch (decryptError) {
+            console.warn('⚠️ 復号化に失敗しました - MOCKデータを使用:', decryptError);
+            setData(MOCK_DATA);
+            return;
           }
-          
-          // ユーザー分離チェック
-          if (secureData.userId !== userIdParam) {
-            throw new Error('ユーザー認証に失敗しました');
-          }
-          
-          decodedData = secureData.data;
           console.log('📊 Validated secure user data:', decodedData);
           
         } else if (dataParam) {
