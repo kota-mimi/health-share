@@ -333,7 +333,7 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
             {showReflection && reflectionAnswer && (
               <div className="mt-6 sm:mt-8">
                 <div className="flex justify-between items-end mb-2 sm:mb-3">
-                  <span className={`text-[8px] sm:text-[10px] uppercase ${fonts.label} ${styles.textMuted}`}>Did you have a good day?</span>
+                  <span className={`text-[8px] sm:text-[10px] uppercase ${fonts.label} ${styles.textMuted}`}>How was your day?</span>
                 </div>
                 <div className="flex items-center">
                   <span className={`text-sm sm:text-base ${fonts.val} ${styles.textPrimary}`}>
