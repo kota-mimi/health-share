@@ -176,7 +176,12 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
       {/* Background Layer (Static) */}
       {customImage ? (
         <>
-          <img src={customImage} alt="Background" className="absolute inset-0 w-full h-full object-cover z-0" />
+          <img 
+            src={customImage} 
+            alt="Background" 
+            className="absolute inset-0 w-full h-full object-cover z-0"
+            crossOrigin="anonymous"
+          />
           <div 
             className="absolute inset-0 bg-black z-1 pointer-events-none transition-opacity duration-300"
             style={{ opacity: overlayOpacity }}

@@ -523,15 +523,31 @@ const App: React.FC = () => {
     }
 
     try {
-      // 高品質画像変換
+      // 高品質画像変換（CORS対応）
       const config = {
         quality: 0.95,
         pixelRatio: 2,
         backgroundColor: '#ffffff',
-        cacheBust: false
+        cacheBust: false,
+        useCORS: true,
+        allowTaint: false,
+        skipFonts: true
       };
 
-      const dataUrl = await htmlToImage.toPng(cardElement, config);
+      // カスタム画像がある場合の特別処理
+      let dataUrl;
+      try {
+        dataUrl = await htmlToImage.toPng(cardElement, config);
+      } catch (corsError) {
+        console.log('CORS エラー、フォールバック設定で再試行:', corsError);
+        // フォールバック: より寛容な設定で再試行
+        const fallbackConfig = {
+          ...config,
+          allowTaint: true,
+          useCORS: false
+        };
+        dataUrl = await htmlToImage.toPng(cardElement, fallbackConfig);
+      }
       
       // ファイル名生成
       const now = new Date();
