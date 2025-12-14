@@ -30,7 +30,6 @@ const MOCK_DATA: DailyLogData = {
 const BACKGROUNDS = [
   { name: 'Dark', class: 'bg-zinc-950', isDark: true },
   { name: 'Light', class: 'bg-white', isDark: false },
-  { name: 'Glass', class: 'bg-transparent', isDark: false },
 ];
 
 const FONTS: { id: FontStyleId; name: string; icon: React.ReactNode }[] = [
@@ -524,17 +523,11 @@ const App: React.FC = () => {
     }
 
     try {
-      // 背景に応じて保存時の背景色を設定
-      const currentBgOption = BACKGROUNDS[bgIndex];
-      const saveBackgroundColor = currentBgOption.name === 'Glass' ? 'transparent' 
-                                 : currentBgOption.name === 'Dark' ? '#09090b' 
-                                 : '#ffffff';
-      
       // 高品質画像変換
       const config = {
         quality: 0.95,
         pixelRatio: 2,
-        backgroundColor: saveBackgroundColor,
+        backgroundColor: '#ffffff',
         cacheBust: false
       };
 
