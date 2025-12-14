@@ -228,15 +228,15 @@ const App: React.FC = () => {
   // データ読み込み完了時にローディングを停止（体重・運動データ含む）
   useEffect(() => {
     if (data) {
-      // データが設定されたら即座にローディング停止
+      // データが設定されたら適切な時間でローディング停止
       setTimeout(() => {
         setIsDataLoading(false);
-      }, 100); // 短縮
+      }, 1500); // ユーザーが認識できる時間に延長
     } else {
       // データがない場合も一定時間後にはローディング停止（フォールバック）
       const fallbackTimer = setTimeout(() => {
         setIsDataLoading(false);
-      }, 2000);
+      }, 3000);
       return () => clearTimeout(fallbackTimer);
     }
   }, [data]);
