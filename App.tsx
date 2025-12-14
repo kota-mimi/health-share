@@ -314,6 +314,21 @@ const App: React.FC = () => {
     setLastInteraction(Date.now());
   };
 
+  // ひとことドロップダウンの外部クリックで閉じる
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('.reflection-dropdown-container')) {
+        setShowReflectionDropdown(false);
+      }
+    };
+
+    if (showReflectionDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showReflectionDropdown]);
+
   // Close dropdowns when clicking outside
   React.useEffect(() => {
     const handleClickOutside = () => {
@@ -797,7 +812,7 @@ const App: React.FC = () => {
                   {showReflection ? "ひとこと" : "ひとこと無し"}
                </button>
                {showReflection && (
-                 <div className="absolute top-full left-0 right-0 mt-1 z-50">
+                 <div className="absolute top-full left-0 right-0 mt-1 z-50 reflection-dropdown-container">
                    <button
                      onClick={(e) => {
                        e.stopPropagation();
