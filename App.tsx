@@ -90,7 +90,7 @@ const UI_TEXT = {
     overlayDarkness: 'Overlay Darkness',
     simulate: 'Simulate New Day',
     accentColor: 'Accent Color',
-    shareSave: 'Share / Save',
+    shareSave: 'Share',
     dragHint: 'Drag • Pinch • Double tap to exit'
   },
   ja: {
@@ -109,7 +109,7 @@ const UI_TEXT = {
     remove: '削除',
     overlayDarkness: '画像の暗さ',
     accentColor: 'アクセント色',
-    shareSave: '保存 / 共有',
+    shareSave: '共有',
     dragHint: 'ドラッグ • ピンチ • ダブルタップで終了'
   }
 };
@@ -508,7 +508,7 @@ const App: React.FC = () => {
   const currentBg = BACKGROUNDS[bgIndex];
   const ui = isJapanese ? UI_TEXT.ja : UI_TEXT.en;
   
-  // シンプルな画像保存機能
+  // iOSネイティブ共有機能
   const handleSaveAndShare = async () => {
     const cardElement = cardRef.current;
     if (!cardElement) {
@@ -517,13 +517,13 @@ const App: React.FC = () => {
 
     // ローディング表示
     const buttonElement = document.querySelector('.save-share-button span');
-    const originalText = buttonElement?.textContent || '保存 / 共有';
+    const originalText = buttonElement?.textContent || '共有';
     if (buttonElement) {
       buttonElement.textContent = '変換中...';
     }
 
     try {
-      // シンプルな設定
+      // 画像変換
       const config = {
         quality: 0.9,
         pixelRatio: 2,
@@ -532,11 +532,42 @@ const App: React.FC = () => {
 
       const dataUrl = await htmlToImage.toPng(cardElement, config);
       
-      // シンプルなダウンロード
+      // ファイル名生成
       const now = new Date();
       const dateStr = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
       const fileName = `健康記録_${dateStr}.png`;
-      
+
+      if (buttonElement) {
+        buttonElement.textContent = '共有準備中...';
+      }
+
+      // Web Share API対応チェック
+      if (navigator.share) {
+        // 画像をBlobに変換
+        const response = await fetch(dataUrl);
+        const blob = await response.blob();
+        const file = new File([blob], fileName, { type: 'image/png' });
+
+        // ファイル共有サポートチェック
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          // iOSネイティブ共有シートを表示
+          await navigator.share({
+            title: '今日の健康記録',
+            text: '健康データを共有します！',
+            files: [file]
+          });
+
+          if (buttonElement) {
+            buttonElement.textContent = '共有完了！';
+            setTimeout(() => {
+              buttonElement.textContent = originalText;
+            }, 2000);
+          }
+          return;
+        }
+      }
+
+      // Web Share API非対応の場合はフォールバック（直接ダウンロード）
       const link = document.createElement('a');
       link.download = fileName;
       link.href = dataUrl;
@@ -545,7 +576,6 @@ const App: React.FC = () => {
       link.click();
       document.body.removeChild(link);
 
-      // 成功メッセージ
       if (buttonElement) {
         buttonElement.textContent = '保存完了！';
         setTimeout(() => {
@@ -554,10 +584,9 @@ const App: React.FC = () => {
       }
       
     } catch (error) {
-      console.error('❌ 保存エラー:', error);
-      // シンプルなエラー処理 - アラートは出さない
+      console.error('❌ 共有エラー:', error);
       if (buttonElement) {
-        buttonElement.textContent = '保存失敗';
+        buttonElement.textContent = '共有失敗';
         setTimeout(() => {
           buttonElement.textContent = originalText;
         }, 2000);
