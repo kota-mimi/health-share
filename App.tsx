@@ -218,10 +218,13 @@ const App: React.FC = () => {
   // ローディング状態を追加
   const [isDataLoading, setIsDataLoading] = useState(true);
 
-  // データ読み込み完了時にローディングを停止
+  // データ読み込み完了時にローディングを停止（体重・運動データ含む）
   useEffect(() => {
     if (data && data !== MOCK_DATA) {
-      setIsDataLoading(false);
+      // データが完全に準備できたら少し待ってからローディング停止
+      setTimeout(() => {
+        setIsDataLoading(false);
+      }, 500); // 500msでデータ準備を保証
     }
   }, [data]);
 
@@ -623,6 +626,19 @@ const App: React.FC = () => {
       }
     }
   };
+
+  // ローディング画面
+  if (isDataLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-gray-300 border-t-gray-800 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-800 text-lg font-medium">読み込み中</p>
+          <p className="text-gray-500 text-sm">データを準備しています...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-4 md:p-8 font-sans">
