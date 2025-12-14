@@ -95,7 +95,7 @@ const UI_TEXT = {
   },
   ja: {
     title: 'ヘルシーシェア プロ',
-    subtitle: 'プロ仕様の健康データ共有。ダブルタップで編集開始。',
+    subtitle: 'プロ仕様の健康データ共有。',
     fontStyle: 'フォントスタイル',
     numberColor: '数字のカラー',
     finishEditing: '編集を完了',
@@ -110,7 +110,7 @@ const UI_TEXT = {
     overlayDarkness: '画像の暗さ',
     accentColor: 'アクセント色',
     shareSave: '共有',
-    dragHint: 'ドラッグ • ピンチ • ダブルタップで終了'
+    dragHint: 'ドラッグ • ピンチで調整'
   }
 };
 
@@ -523,10 +523,10 @@ const App: React.FC = () => {
     }
 
     try {
-      // 高速画像変換（品質を下げて速度優先）
+      // 高品質画像変換
       const config = {
-        quality: 0.8,
-        pixelRatio: 1,
+        quality: 0.95,
+        pixelRatio: 2,
         backgroundColor: '#ffffff',
         cacheBust: false
       };
@@ -690,11 +690,6 @@ const App: React.FC = () => {
             </div>
           )}
           
-          {interactionMode === 'view' && (
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-800/80 text-white text-xs px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm pointer-events-none z-50">
-              {isJapanese ? 'ダブルタップで編集' : 'Double tap to edit'}
-            </div>
-          )}
         </div>
 
         {/* Controls / Context Area */}
