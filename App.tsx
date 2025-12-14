@@ -213,6 +213,13 @@ const App: React.FC = () => {
     };
     
     loadUserData();
+    
+    // 安全のため3秒後には強制的にローディング停止
+    const maxLoadingTimer = setTimeout(() => {
+      setIsDataLoading(false);
+    }, 3000);
+    
+    return () => clearTimeout(maxLoadingTimer);
   }, []);
 
   // ローディング状態を追加
@@ -220,11 +227,17 @@ const App: React.FC = () => {
 
   // データ読み込み完了時にローディングを停止（体重・運動データ含む）
   useEffect(() => {
-    if (data && data !== MOCK_DATA) {
-      // データが完全に準備できたら少し待ってからローディング停止
+    if (data) {
+      // データが設定されたら即座にローディング停止
       setTimeout(() => {
         setIsDataLoading(false);
-      }, 500); // 500msでデータ準備を保証
+      }, 100); // 短縮
+    } else {
+      // データがない場合も一定時間後にはローディング停止（フォールバック）
+      const fallbackTimer = setTimeout(() => {
+        setIsDataLoading(false);
+      }, 2000);
+      return () => clearTimeout(fallbackTimer);
     }
   }, [data]);
 
