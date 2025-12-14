@@ -119,7 +119,7 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
   ];
 
   // Define styles based on mode (if no custom image)
-  const effectiveIsDarkMode = customImage ? true : isDarkMode;
+  const effectiveIsDarkMode = isDarkMode;
   
   const styles = effectiveIsDarkMode ? {
     textPrimary: 'text-white',
