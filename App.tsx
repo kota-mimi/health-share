@@ -523,11 +523,12 @@ const App: React.FC = () => {
     }
 
     try {
-      // 画像変換
+      // 高速画像変換（品質を下げて速度優先）
       const config = {
-        quality: 0.9,
-        pixelRatio: 2,
-        backgroundColor: '#ffffff'
+        quality: 0.8,
+        pixelRatio: 1,
+        backgroundColor: '#ffffff',
+        cacheBust: false
       };
 
       const dataUrl = await htmlToImage.toPng(cardElement, config);
@@ -543,27 +544,52 @@ const App: React.FC = () => {
 
       // Web Share API対応チェック
       if (navigator.share) {
-        // 画像をBlobに変換
-        const response = await fetch(dataUrl);
-        const blob = await response.blob();
-        const file = new File([blob], fileName, { type: 'image/png' });
-
-        // ファイル共有サポートチェック
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          // iOSネイティブ共有シートを表示
-          await navigator.share({
-            title: '今日の健康記録',
-            text: '健康データを共有します！',
-            files: [file]
-          });
-
-          if (buttonElement) {
-            buttonElement.textContent = '共有完了！';
-            setTimeout(() => {
-              buttonElement.textContent = originalText;
-            }, 2000);
+        try {
+          // 画像をBlobに変換
+          const response = await fetch(dataUrl);
+          const blob = await response.blob();
+          
+          // ファイルサイズチェック（10MB未満に制限）
+          if (blob.size > 10 * 1024 * 1024) {
+            throw new Error('ファイルサイズが大きすぎます');
           }
-          return;
+          
+          const file = new File([blob], fileName, { type: 'image/png' });
+
+          // ファイル共有サポートチェック
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            // ネイティブ共有シートを表示
+            await navigator.share({
+              title: '健康記録',
+              files: [file]
+            });
+
+            if (buttonElement) {
+              buttonElement.textContent = '共有完了！';
+              setTimeout(() => {
+                buttonElement.textContent = originalText;
+              }, 2000);
+            }
+            return;
+          } else {
+            // ファイル共有非対応の場合、URLのみで共有を試行
+            await navigator.share({
+              title: '健康記録',
+              text: '健康データを共有します！',
+              url: window.location.href
+            });
+            
+            if (buttonElement) {
+              buttonElement.textContent = '共有完了！';
+              setTimeout(() => {
+                buttonElement.textContent = originalText;
+              }, 2000);
+            }
+            return;
+          }
+        } catch (shareError) {
+          console.log('共有エラー:', shareError);
+          // エラーの場合はフォールバックに進む
         }
       }
 
