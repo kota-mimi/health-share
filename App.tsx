@@ -543,7 +543,7 @@ const App: React.FC = () => {
     const buttonElement = document.querySelector('.save-share-button span');
     const originalText = buttonElement?.textContent || '共有';
     if (buttonElement) {
-      buttonElement.textContent = '変換中...';
+      buttonElement.textContent = '準備中...';
     }
 
     try {
@@ -679,20 +679,14 @@ const App: React.FC = () => {
         throw new Error('画像生成が失敗しました');
       }
       
-      if (buttonElement) {
-        buttonElement.textContent = '共有準備中...';
-      }
-      
       console.log('🎯 画像生成完了確認 - Web Share API開始');
 
       // Web Share API対応チェック
       if (navigator.share) {
         try {
-          console.log('🔄 Blob変換開始...');
           // 画像をBlobに変換
           const response = await fetch(dataUrl);
           const blob = await response.blob();
-          console.log('✅ Blob変換完了:', blob.size, 'bytes');
           
           // ファイルサイズチェック（10MB未満に制限）
           if (blob.size > 10 * 1024 * 1024) {
@@ -700,28 +694,20 @@ const App: React.FC = () => {
           }
           
           const file = new File([blob], fileName, { type: 'image/png' });
-          console.log('📁 ファイル作成完了:', fileName);
           
-          // 画像処理完了を確実に待機
-          console.log('⏳ 画像処理完了待機中...');
-          await new Promise(resolve => setTimeout(resolve, 1500)); // 1.5秒待機
-          console.log('🚀 Web Share API実行開始');
+          // スムーズな実行のための最小待機
+          await new Promise(resolve => setTimeout(resolve, 200));
 
           // ファイル共有サポートチェック
           if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            console.log('📱 iOS共有シート表示直前');
             // ネイティブ共有シートを表示
             await navigator.share({
               title: '健康記録',
               files: [file]
             });
-            console.log('✅ iOS共有完了');
 
             if (buttonElement) {
-              buttonElement.textContent = '共有完了！';
-              setTimeout(() => {
-                buttonElement.textContent = originalText;
-              }, 2000);
+              buttonElement.textContent = originalText; // すぐに元に戻す
             }
             return;
           } else {
