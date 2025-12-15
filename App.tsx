@@ -601,6 +601,17 @@ const App: React.FC = () => {
         console.log('✅ 画像ロード完了');
       }
       
+      // DOM更新完了を確実に待機
+      console.log('⏳ DOM更新完了待機中...');
+      await new Promise(resolve => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            console.log('✅ DOM更新完了');
+            resolve(true);
+          });
+        });
+      });
+      
       try {
         console.log('🔄 画像変換開始...');
         dataUrl = await htmlToImage.toPng(cardElement, config);
