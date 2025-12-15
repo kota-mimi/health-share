@@ -534,6 +534,9 @@ const App: React.FC = () => {
     
     setIsSaving(true);
     console.log('🔒 保存処理開始 - ロック中');
+    
+    // 重要: ボタンイベントの即座実行を防ぐ
+    console.log('⏳ 画像処理開始まで待機...');
     const cardElement = cardRef.current;
     if (!cardElement) {
       return;
