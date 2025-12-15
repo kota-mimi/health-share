@@ -537,9 +537,9 @@ const App: React.FC = () => {
     }
     
     // 🔍 1回目 vs 2回目の状態比較
-    const cardElement = document.getElementById('daily-log-card');
-    if (cardElement) {
-      const bgStyle = window.getComputedStyle(cardElement);
+    const cardElementForDebug = document.getElementById('daily-log-card');
+    if (cardElementForDebug) {
+      const bgStyle = window.getComputedStyle(cardElementForDebug);
       const backgroundImage = bgStyle.backgroundImage;
       console.log(`🎯 #${callCount} DOM状態チェック:`, {
         customImageState: customImage,
@@ -552,7 +552,7 @@ const App: React.FC = () => {
       });
       
       // 🔍 より詳細なDOM画像確認
-      const imgElements = cardElement.querySelectorAll('img');
+      const imgElements = cardElementForDebug.querySelectorAll('img');
       console.log(`🔍 #${callCount} DOM内img要素:`, {
         imgElementsCount: imgElements.length,
         imgSources: Array.from(imgElements).map(img => ({
