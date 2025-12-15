@@ -635,6 +635,28 @@ const App: React.FC = () => {
         console.log('🔄 画像変換開始...');
         dataUrl = await htmlToImage.toPng(cardElement, config);
         console.log('✅ 画像変換成功');
+        
+        // 画像データの実際の内容を確認
+        if (customImage) {
+          console.log('🔍 カスタム画像の変換結果確認中...');
+          const img = new Image();
+          await new Promise((resolve, reject) => {
+            img.onload = () => {
+              console.log('✅ 変換画像確認完了:', img.width, 'x', img.height);
+              resolve(true);
+            };
+            img.onerror = () => {
+              console.error('❌ 変換画像確認失敗');
+              reject(new Error('変換画像の検証に失敗'));
+            };
+            img.src = dataUrl;
+            // 3秒でタイムアウト
+            setTimeout(() => {
+              console.warn('⏰ 変換画像確認タイムアウト');
+              resolve(true);
+            }, 3000);
+          });
+        }
       } catch (corsError) {
         console.log('⚠️ 1st試行失敗、フォールバック設定で再試行:', corsError);
         
@@ -663,6 +685,27 @@ const App: React.FC = () => {
         try {
           dataUrl = await htmlToImage.toPng(cardElement, fallbackConfig);
           console.log('✅ フォールバック変換成功');
+          
+          // フォールバック画像も確認
+          if (customImage) {
+            console.log('🔍 フォールバック画像の確認中...');
+            const img = new Image();
+            await new Promise((resolve, reject) => {
+              img.onload = () => {
+                console.log('✅ フォールバック画像確認完了:', img.width, 'x', img.height);
+                resolve(true);
+              };
+              img.onerror = () => {
+                console.error('❌ フォールバック画像確認失敗');
+                reject(new Error('フォールバック画像の検証に失敗'));
+              };
+              img.src = dataUrl;
+              setTimeout(() => {
+                console.warn('⏰ フォールバック画像確認タイムアウト');
+                resolve(true);
+              }, 3000);
+            });
+          }
         } catch (fallbackError) {
           console.error('❌ フォールバック変換も失敗:', fallbackError);
           throw fallbackError;
@@ -695,8 +738,29 @@ const App: React.FC = () => {
           
           const file = new File([blob], fileName, { type: 'image/png' });
           
-          // スムーズな実行のための最小待機
-          await new Promise(resolve => setTimeout(resolve, 200));
+          // 画像Blobの最終確認
+          console.log('🔍 最終Blob確認中...');
+          const blobUrl = URL.createObjectURL(blob);
+          const finalImg = new Image();
+          await new Promise((resolve) => {
+            finalImg.onload = () => {
+              console.log('✅ 最終画像確認完了 - 共有準備OK');
+              URL.revokeObjectURL(blobUrl);
+              resolve(true);
+            };
+            finalImg.onerror = () => {
+              console.error('❌ 最終画像確認失敗');
+              URL.revokeObjectURL(blobUrl);
+              resolve(true);
+            };
+            finalImg.src = blobUrl;
+            // 5秒でタイムアウト
+            setTimeout(() => {
+              console.warn('⏰ 最終画像確認タイムアウト');
+              URL.revokeObjectURL(blobUrl);
+              resolve(true);
+            }, 5000);
+          });
 
           // ファイル共有サポートチェック
           if (navigator.canShare && navigator.canShare({ files: [file] })) {
