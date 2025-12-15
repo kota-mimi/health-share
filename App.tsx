@@ -194,8 +194,8 @@ const App: React.FC = () => {
           const userData: DailyLogData = {
             date: new Date(decodedData.date || new Date()),
             weight: {
-              current: decodedData.weight?.current || 0,
-              diff: decodedData.weight?.diff || 0,
+              current: decodedData.weight || 0,
+              diff: decodedData.weightDiff || 0,
             },
             calories: {
               current: parseInt(decodedData.calories) || 0,
