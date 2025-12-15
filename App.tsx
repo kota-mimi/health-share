@@ -546,7 +546,7 @@ const App: React.FC = () => {
         quality: 0.95,
         pixelRatio: isMobile ? 1.5 : 2, // 携帯では軽量化
         backgroundColor: customImage ? null : '#ffffff',
-        cacheBust: customImage ? Date.now() : false, // カスタム画像時のキャッシュ回避
+        cacheBust: !!customImage, // カスタム画像時のキャッシュ回避
         useCORS: true,
         allowTaint: false,
         skipFonts: true,
