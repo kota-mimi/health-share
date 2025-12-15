@@ -604,7 +604,6 @@ const App: React.FC = () => {
               };
               img.onerror = (e) => {
                 console.error('❌ 画像読み込みエラー:', e);
-                alert('🚨 画像読み込みエラー: ' + e.toString());
                 resolve(true);
               };
               // 携帯用に待機時間延長
@@ -636,10 +635,8 @@ const App: React.FC = () => {
         console.log('🔄 画像変換開始...');
         dataUrl = await htmlToImage.toPng(cardElement, config);
         console.log('✅ 画像変換成功');
-        alert('✅ 画像変換成功 - カスタム画像: ' + (customImage ? 'あり' : 'なし'));
       } catch (corsError) {
         console.log('⚠️ 1st試行失敗、フォールバック設定で再試行:', corsError);
-        alert('🚨 1st変換失敗: ' + corsError.message + ' - フォールバック試行中');
         
         // フォールバック: カスタム画像用最寛容設定
         const fallbackConfig = {
@@ -666,9 +663,8 @@ const App: React.FC = () => {
         try {
           dataUrl = await htmlToImage.toPng(cardElement, fallbackConfig);
           console.log('✅ フォールバック変換成功');
-          alert('✅ フォールバック変換成功');
         } catch (fallbackError) {
-          alert('🚨 フォールバック変換も失敗: ' + fallbackError.message);
+          console.error('❌ フォールバック変換も失敗:', fallbackError);
           throw fallbackError;
         }
       }
@@ -706,9 +702,9 @@ const App: React.FC = () => {
           const file = new File([blob], fileName, { type: 'image/png' });
           console.log('📁 ファイル作成完了:', fileName);
           
-          // 追加：少し待機してからシェア実行
-          console.log('⏳ 最終確認待機中...');
-          await new Promise(resolve => setTimeout(resolve, 500)); // 0.5秒待機
+          // 画像処理完了を確実に待機
+          console.log('⏳ 画像処理完了待機中...');
+          await new Promise(resolve => setTimeout(resolve, 1500)); // 1.5秒待機
           console.log('🚀 Web Share API実行開始');
 
           // ファイル共有サポートチェック
@@ -777,7 +773,7 @@ const App: React.FC = () => {
       
     } catch (error) {
       console.error('❌ 共有エラー:', error);
-      alert('🚨 最終エラー: ' + error.message);
+      console.error('❌ 最終エラー:', error);
       if (buttonElement) {
         buttonElement.textContent = '共有失敗';
         setTimeout(() => {
