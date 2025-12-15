@@ -569,9 +569,9 @@ const App: React.FC = () => {
     await new Promise(resolve => setTimeout(resolve, 100)); // React state更新待機
     console.log(`🔒 #${callCount} 保存処理開始 - ロック中`);
     
-    // 🚨 重要: DOMスタイル反映の確実な待機（画像読み込み完了保証）
-    if (customImage) {
-      console.log(`🔄 #${callCount} カスタム画像のDOMスタイル反映を確実に待機...`);
+    // 🚨 重要: DOMスタイル反映の確実な待機（1回目の問題解決）
+    if (customImage && callCount === 1) {
+      console.log('🔄 1回目: カスタム画像のDOMスタイル反映を確実に待機...');
       
       // DOMスタイルが反映されるまで待機
       let attempts = 0;
@@ -662,39 +662,26 @@ const App: React.FC = () => {
           
           if (img) {
             if (img.complete && img.naturalWidth > 0) {
-              console.log('✅ 画像既読み込み済み - 描画完了まで確実に待機');
-              // より確実な描画待機（複数のrequestAnimationFrame使用）
-              requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                  setTimeout(() => {
-                    console.log('✅ 画像描画完了確認');
-                    resolve(true);
-                  }, 800); // 0.8秒の描画待機（長め）
-                });
-              });
+              console.log('✅ 画像既読み込み済み - さらなる描画確認中');
+              // 追加: 描画完了まで確実に待機
+              setTimeout(() => {
+                console.log('✅ 画像描画完了確認');
+                resolve(true);
+              }, 500); // 0.5秒の描画待機
             } else {
-              console.log('🔄 画像読み込み待機中...');
               img.onload = () => {
-                console.log('✅ 画像onload完了 - 描画確認待機');
-                // onload後も描画完了を確実に待機
-                requestAnimationFrame(() => {
-                  requestAnimationFrame(() => {
-                    setTimeout(() => {
-                      console.log('✅ 画像描画完了確認');
-                      resolve(true);
-                    }, 500);
-                  });
-                });
+                console.log('✅ 画像onload完了');
+                resolve(true);
               };
               img.onerror = (e) => {
                 console.error('❌ 画像読み込みエラー:', e);
                 resolve(true);
               };
-              // タイムアウト時間を延長（特にモバイル用）
+              // 携帯用に待機時間延長
               setTimeout(() => {
                 console.warn('⏰ 画像読み込みタイムアウト');
                 resolve(true);
-              }, 8000); // 8秒に延長
+              }, 5000);
             }
           } else {
             console.warn('⚠️ img要素が見つからない');
@@ -889,56 +876,6 @@ const App: React.FC = () => {
       // 画像生成完了確認
       if (!dataUrl) {
         throw new Error('画像生成が失敗しました');
-      }
-      
-      // 🚨 重要: 1回目の場合、生成画像の内容確認を必須にする
-      if (customImage && callCount === 1) {
-        console.log('🔍 1回目: 生成画像の内容確認を実施...');
-        const img = new Image();
-        const imageValid = await new Promise((resolve) => {
-          img.onload = () => {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0);
-            
-            // 中央ピクセルをチェック
-            const centerX = Math.floor(img.width / 2);
-            const centerY = Math.floor(img.height / 2);
-            const pixelData = ctx.getImageData(centerX, centerY, 1, 1).data;
-            const hasCustomBackground = pixelData[3] > 0 && (pixelData[0] !== 255 || pixelData[1] !== 255 || pixelData[2] !== 255);
-            
-            console.log('🔍 1回目画像内容確認結果:', {
-              hasCustomBackground,
-              centerRGB: [pixelData[0], pixelData[1], pixelData[2]],
-              alpha: pixelData[3]
-            });
-            
-            if (!hasCustomBackground) {
-              console.error('❌ 1回目: カスタム背景が画像に含まれていません');
-              resolve(false);
-            } else {
-              console.log('✅ 1回目: カスタム背景確認OK');
-              resolve(true);
-            }
-          };
-          img.onerror = () => {
-            console.error('❌ 1回目: 画像確認エラー');
-            resolve(false);
-          };
-          img.src = dataUrl;
-          
-          // タイムアウト
-          setTimeout(() => {
-            console.warn('⏰ 1回目: 画像確認タイムアウト');
-            resolve(false);
-          }, 3000);
-        });
-        
-        if (!imageValid) {
-          throw new Error('カスタム背景画像が正しく生成されませんでした');
-        }
       }
       
       console.log('🎯 画像生成完了確認 - Web Share API開始');
