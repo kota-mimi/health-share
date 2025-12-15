@@ -527,17 +527,47 @@ const App: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSaveAndShare = async () => {
-    console.log('🚨 handleSaveAndShare呼び出し - isSaving:', isSaving);
+    // 🔍 詳細デバッグ: 呼び出し回数をカウント
+    const callCount = (window as any).saveCallCount = ((window as any).saveCallCount || 0) + 1;
+    console.log(`🚨 handleSaveAndShare呼び出し #${callCount} - isSaving:`, isSaving);
     
     if (isSaving) {
       console.log('⚠️ 保存処理中のため中断 - 重複実行防止');
       return;
     }
     
+    // 🔍 1回目 vs 2回目の状態比較
+    const cardElement = document.getElementById('daily-log-card');
+    if (cardElement) {
+      const bgStyle = window.getComputedStyle(cardElement);
+      const backgroundImage = bgStyle.backgroundImage;
+      console.log(`🎯 #${callCount} DOM状態チェック:`, {
+        customImageState: customImage,
+        customImageType: typeof customImage,
+        customImageLength: customImage?.length,
+        domBackgroundImage: backgroundImage,
+        domBackgroundImageLength: backgroundImage.length,
+        hasCustomImageInDOM: backgroundImage !== 'none' && backgroundImage.includes('blob:'),
+        stateVsDOMMatch: customImage && backgroundImage.includes('blob:')
+      });
+      
+      // 🔍 より詳細なDOM画像確認
+      const imgElements = cardElement.querySelectorAll('img');
+      console.log(`🔍 #${callCount} DOM内img要素:`, {
+        imgElementsCount: imgElements.length,
+        imgSources: Array.from(imgElements).map(img => ({
+          src: img.src.substring(0, 50) + '...',
+          complete: img.complete,
+          naturalWidth: img.naturalWidth,
+          naturalHeight: img.naturalHeight
+        }))
+      });
+    }
+    
     // React stateの更新を待つ
     setIsSaving(true);
     await new Promise(resolve => setTimeout(resolve, 100)); // React state更新待機
-    console.log('🔒 保存処理開始 - ロック中');
+    console.log(`🔒 #${callCount} 保存処理開始 - ロック中`);
     
     // 重要: ボタンイベントの即座実行を防ぐ
     console.log('⏳ 画像処理開始まで待機...');
@@ -643,16 +673,46 @@ const App: React.FC = () => {
       });
       
       try {
-        console.log('🔄 画像変換開始...');
+        console.log('🔄 画像変換開始...', {
+          customImage: !!customImage,
+          cardElementSize: { width: cardElement.offsetWidth, height: cardElement.offsetHeight },
+          config: config
+        });
+        
+        // 🔍 htmlToImage実行直前のDOM最終確認
+        console.log(`🎯 #${callCount} htmlToImage実行直前チェック:`, {
+          cardElementExists: !!cardElement,
+          cardElementVisible: cardElement && cardElement.offsetWidth > 0 && cardElement.offsetHeight > 0,
+          cardComputedStyle: cardElement ? window.getComputedStyle(cardElement).backgroundImage : 'none',
+          customImageState: customImage,
+          hasCustomImageInStyle: cardElement ? window.getComputedStyle(cardElement).backgroundImage.includes('blob:') : false
+        });
+        
+        // 重要: htmlToImageの処理状態確認
+        const startTime = Date.now();
+        console.log(`🚀 #${callCount} htmlToImage開始 - ${new Date(startTime).toLocaleTimeString()}`);
         dataUrl = await htmlToImage.toPng(cardElement, config);
-        console.log('✅ 画像変換成功');
+        const endTime = Date.now();
+        console.log(`✅ #${callCount} htmlToImage完了 - ${new Date(endTime).toLocaleTimeString()}`);
+        
+        console.log('✅ 画像変換成功', {
+          processingTime: `${endTime - startTime}ms`,
+          dataUrlSize: dataUrl.length,
+          dataUrlStart: dataUrl.substring(0, 100)
+        });
         
         // 画像データの実際の内容を確認
         if (customImage) {
-          console.log('🔍 カスタム画像の変換結果確認中...');
+          console.log(`🔍 #${callCount} カスタム画像の変換結果確認中...`);
+          console.log(`🔍 #${callCount} カスタム画像変換前確認:`, {
+            htmlToImageProcessingTime: `${endTime - startTime}ms`,
+            dataUrlPrefix: dataUrl.substring(0, 100),
+            isFirstCall: callCount === 1,
+            customImageUrl: customImage.substring(0, 50) + '...'
+          });
           
           // 追加：初回処理用のさらなる待機
-          console.log('⏳ 初回カスタム画像処理の安定化待機...');
+          console.log(`⏳ #${callCount} 初回カスタム画像処理の安定化待機...`);
           await new Promise(resolve => setTimeout(resolve, 1000)); // 1秒追加待機
           
           const img = new Image();
@@ -664,7 +724,47 @@ const App: React.FC = () => {
                 setTimeout(() => resolve(true), 500); // 追加待機
                 return;
               }
-              console.log('✅ 変換画像確認完了:', img.width, 'x', img.height);
+              
+              // 重要: 画像の実際の色データを確認
+              const canvas = document.createElement('canvas');
+              const ctx = canvas.getContext('2d');
+              canvas.width = img.width;
+              canvas.height = img.height;
+              ctx.drawImage(img, 0, 0);
+              
+              // 画像の中央ピクセルを確認
+              const centerX = Math.floor(img.width / 2);
+              const centerY = Math.floor(img.height / 2);
+              const pixelData = ctx.getImageData(centerX, centerY, 1, 1).data;
+              
+              console.log(`✅ #${callCount} 変換画像確認完了:`, {
+                size: `${img.width}x${img.height}`,
+                centerPixel: `rgba(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]}, ${pixelData[3]})`,
+                hasCustomBackground: pixelData[3] > 0 && (pixelData[0] !== 255 || pixelData[1] !== 255 || pixelData[2] !== 255),
+                isFirstCall: callCount === 1,
+                pixelAnalysis: {
+                  isWhite: pixelData[0] === 255 && pixelData[1] === 255 && pixelData[2] === 255,
+                  isBlack: pixelData[0] === 0 && pixelData[1] === 0 && pixelData[2] === 0,
+                  hasAlpha: pixelData[3] > 0,
+                  rgbSum: pixelData[0] + pixelData[1] + pixelData[2]
+                }
+              });
+              
+              // 🚨 1回目と2回目の重要な違いをログ出力
+              if (callCount === 1) {
+                console.log('🚨 【1回目】画像変換結果 - カスタム背景が含まれているか？', {
+                  backgroundDetected: pixelData[3] > 0 && (pixelData[0] !== 255 || pixelData[1] !== 255 || pixelData[2] !== 255),
+                  centerRGB: [pixelData[0], pixelData[1], pixelData[2]],
+                  alpha: pixelData[3]
+                });
+              } else if (callCount === 2) {
+                console.log('🎉 【2回目】画像変換結果 - カスタム背景が含まれているか？', {
+                  backgroundDetected: pixelData[3] > 0 && (pixelData[0] !== 255 || pixelData[1] !== 255 || pixelData[2] !== 255),
+                  centerRGB: [pixelData[0], pixelData[1], pixelData[2]],
+                  alpha: pixelData[3]
+                });
+              }
+              
               resolve(true);
             };
             img.onerror = () => {
