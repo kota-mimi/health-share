@@ -524,7 +524,16 @@ const App: React.FC = () => {
   const ui = isJapanese ? UI_TEXT.ja : UI_TEXT.en;
   
   // iOSネイティブ共有機能
+  const [isSaving, setIsSaving] = useState(false);
+
   const handleSaveAndShare = async () => {
+    if (isSaving) {
+      console.log('⚠️ 保存処理中のため中断');
+      return;
+    }
+    
+    setIsSaving(true);
+    console.log('🔒 保存処理開始 - ロック中');
     const cardElement = cardRef.current;
     if (!cardElement) {
       return;
@@ -585,6 +594,7 @@ const App: React.FC = () => {
               };
               img.onerror = (e) => {
                 console.error('❌ 画像読み込みエラー:', e);
+                alert('🚨 画像読み込みエラー: ' + e.toString());
                 resolve(true);
               };
               // 携帯用に待機時間延長
@@ -616,8 +626,11 @@ const App: React.FC = () => {
         console.log('🔄 画像変換開始...');
         dataUrl = await htmlToImage.toPng(cardElement, config);
         console.log('✅ 画像変換成功');
+        alert('✅ 画像変換成功 - カスタム画像: ' + (customImage ? 'あり' : 'なし'));
       } catch (corsError) {
         console.log('⚠️ 1st試行失敗、フォールバック設定で再試行:', corsError);
+        alert('🚨 1st変換失敗: ' + corsError.message + ' - フォールバック試行中');
+        
         // フォールバック: より寛容な設定で再試行
         const fallbackConfig = {
           ...config,
@@ -625,8 +638,15 @@ const App: React.FC = () => {
           useCORS: false,
           timeout: 30000 // 30秒タイムアウト
         };
-        dataUrl = await htmlToImage.toPng(cardElement, fallbackConfig);
-        console.log('✅ フォールバック変換成功');
+        
+        try {
+          dataUrl = await htmlToImage.toPng(cardElement, fallbackConfig);
+          console.log('✅ フォールバック変換成功');
+          alert('✅ フォールバック変換成功');
+        } catch (fallbackError) {
+          alert('🚨 フォールバック変換も失敗: ' + fallbackError.message);
+          throw fallbackError;
+        }
       }
       
       // ファイル名生成
@@ -716,12 +736,16 @@ const App: React.FC = () => {
       
     } catch (error) {
       console.error('❌ 共有エラー:', error);
+      alert('🚨 最終エラー: ' + error.message);
       if (buttonElement) {
         buttonElement.textContent = '共有失敗';
         setTimeout(() => {
           buttonElement.textContent = originalText;
         }, 2000);
       }
+    } finally {
+      setIsSaving(false);
+      console.log('🔓 保存処理完了 - ロック解除');
     }
   };
 
