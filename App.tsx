@@ -527,8 +527,10 @@ const App: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSaveAndShare = async () => {
+    console.log('🚨 handleSaveAndShare呼び出し - isSaving:', isSaving);
+    
     if (isSaving) {
-      console.log('⚠️ 保存処理中のため中断');
+      console.log('⚠️ 保存処理中のため中断 - 重複実行防止');
       return;
     }
     
@@ -1166,8 +1168,9 @@ const App: React.FC = () => {
 
 
              <button 
-              className="save-share-button w-full flex items-center justify-center gap-3 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 shadow-lg"
+              className="save-share-button w-full flex items-center justify-center gap-3 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleSaveAndShare}
+              disabled={isSaving}
             >
               <Download size={16} />
               <span className="font-mono text-xs font-bold">{ui.shareSave}</span>
