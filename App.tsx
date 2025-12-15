@@ -550,16 +550,25 @@ const App: React.FC = () => {
       // モバイル検出と設定最適化
       const isMobile = /Mobi|Android/i.test(navigator.userAgent);
       
-      // 高品質画像変換（携帯対応）
+      // 高品質画像変換（カスタム画像対応）
       const config = {
         quality: 0.95,
-        pixelRatio: isMobile ? 1.5 : 2, // 携帯では軽量化
+        pixelRatio: isMobile ? 1.5 : 2,
         backgroundColor: customImage ? null : '#ffffff',
-        cacheBust: !!customImage, // カスタム画像時のキャッシュ回避
-        useCORS: true,
-        allowTaint: false,
+        cacheBust: !!customImage,
+        // カスタム画像がある場合は寛容な設定
+        useCORS: customImage ? false : true,
+        allowTaint: customImage ? true : false,
         skipFonts: true,
-        timeout: isMobile ? 20000 : 15000 // 携帯では長めのタイムアウト
+        timeout: isMobile ? 20000 : 15000,
+        // 追加: カスタム画像用の設定
+        ...(customImage && {
+          filter: (node) => {
+            // img要素は必ず含める
+            if (node.tagName === 'IMG') return true;
+            return true;
+          }
+        })
       };
 
       // カスタム画像がある場合の特別処理
@@ -580,7 +589,8 @@ const App: React.FC = () => {
             imgSrc: img?.src,
             imgComplete: img?.complete,
             imgNaturalWidth: img?.naturalWidth,
-            imgNaturalHeight: img?.naturalHeight
+            imgNaturalHeight: img?.naturalHeight,
+            computedStyle: img ? window.getComputedStyle(img).display : 'none'
           });
           
           if (img) {
@@ -631,12 +641,26 @@ const App: React.FC = () => {
         console.log('⚠️ 1st試行失敗、フォールバック設定で再試行:', corsError);
         alert('🚨 1st変換失敗: ' + corsError.message + ' - フォールバック試行中');
         
-        // フォールバック: より寛容な設定で再試行
+        // フォールバック: カスタム画像用最寛容設定
         const fallbackConfig = {
-          ...config,
+          quality: 0.9, // 軽量化
+          pixelRatio: 1, // さらに軽量化
+          backgroundColor: null,
+          cacheBust: true,
           allowTaint: true,
           useCORS: false,
-          timeout: 30000 // 30秒タイムアウト
+          skipFonts: false,
+          timeout: 30000,
+          // カスタム画像を強制的に含める
+          ...(customImage && {
+            preferredFormat: 'png',
+            style: {
+              // 背景画像を強制表示
+              backgroundImage: `url(${customImage})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center'
+            }
+          })
         };
         
         try {
