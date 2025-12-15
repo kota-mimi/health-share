@@ -920,18 +920,22 @@ const App: React.FC = () => {
 
           // ファイル共有サポートチェック
           if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            // ネイティブ共有シートを表示
+            // 🎯 準備完了 - iOSネイティブ共有を表示
+            console.log('🚀 画像準備完了 - iOSネイティブ共有表示');
             await navigator.share({
               title: '健康記録',
               files: [file]
             });
-
+            
+            // 共有完了または閉じた場合
+            console.log('✅ iOSネイティブ共有完了');
             if (buttonElement) {
-              buttonElement.textContent = originalText; // すぐに元に戻す
+              buttonElement.textContent = originalText; // 元に戻す
             }
             return;
           } else {
             // ファイル共有非対応の場合、URLのみで共有を試行
+            console.log('📤 URLのみ共有実行');
             await navigator.share({
               title: '健康記録',
               text: '健康データを共有します！',
@@ -939,10 +943,7 @@ const App: React.FC = () => {
             });
             
             if (buttonElement) {
-              buttonElement.textContent = '共有完了！';
-              setTimeout(() => {
-                buttonElement.textContent = originalText;
-              }, 2000);
+              buttonElement.textContent = originalText;
             }
             return;
           }
@@ -971,20 +972,16 @@ const App: React.FC = () => {
       console.log('✅ ダウンロードリンククリック完了');
 
       if (buttonElement) {
-        buttonElement.textContent = '保存完了！';
-        setTimeout(() => {
-          buttonElement.textContent = originalText;
-        }, 2000);
+        buttonElement.textContent = originalText; // シンプルに元に戻す
       }
       
     } catch (error) {
       console.error('❌ 共有エラー:', error);
-      console.error('❌ 最終エラー:', error);
       if (buttonElement) {
-        buttonElement.textContent = '共有失敗';
+        buttonElement.textContent = 'エラー';
         setTimeout(() => {
           buttonElement.textContent = originalText;
-        }, 2000);
+        }, 1000);
       }
     } finally {
       setIsSaving(false);
