@@ -534,7 +534,9 @@ const App: React.FC = () => {
       return;
     }
     
+    // React stateの更新を待つ
     setIsSaving(true);
+    await new Promise(resolve => setTimeout(resolve, 100)); // React state更新待機
     console.log('🔒 保存処理開始 - ロック中');
     
     // 重要: ボタンイベントの即座実行を防ぐ
@@ -600,8 +602,12 @@ const App: React.FC = () => {
           
           if (img) {
             if (img.complete && img.naturalWidth > 0) {
-              console.log('✅ 画像既読み込み済み');
-              resolve(true);
+              console.log('✅ 画像既読み込み済み - さらなる描画確認中');
+              // 追加: 描画完了まで確実に待機
+              setTimeout(() => {
+                console.log('✅ 画像描画完了確認');
+                resolve(true);
+              }, 500); // 0.5秒の描画待機
             } else {
               img.onload = () => {
                 console.log('✅ 画像onload完了');
