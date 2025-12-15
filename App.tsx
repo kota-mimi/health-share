@@ -525,6 +525,7 @@ const App: React.FC = () => {
   
   // iOSネイティブ共有機能
   const [isSaving, setIsSaving] = useState(false);
+  const [isImageReady, setIsImageReady] = useState(false);
 
   const handleSaveAndShare = async () => {
     // 🔍 詳細デバッグ: 呼び出し回数をカウント
@@ -985,6 +986,7 @@ const App: React.FC = () => {
       }
     } finally {
       setIsSaving(false);
+      setIsImageReady(true); // 1回目完了後、画像準備完了状態に
       console.log('🔓 保存処理完了 - ロック解除');
     }
   };
@@ -1301,12 +1303,18 @@ const App: React.FC = () => {
 
 
              <button 
-              className="save-share-button w-full flex items-center justify-center gap-3 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`save-share-button w-full flex items-center justify-center gap-3 px-4 py-2.5 ${
+                isImageReady 
+                  ? 'bg-green-600 hover:bg-green-700' 
+                  : 'bg-blue-600 hover:bg-blue-700'
+              } text-white rounded-lg transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed`}
               onClick={handleSaveAndShare}
               disabled={isSaving}
             >
               <Download size={16} />
-              <span className="font-mono text-xs font-bold">{ui.shareSave}</span>
+              <span className="font-mono text-xs font-bold">
+                {isImageReady ? '画像準備完了' : ui.shareSave}
+              </span>
             </button>
           </div>
         </div>
