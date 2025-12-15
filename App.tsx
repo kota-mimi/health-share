@@ -569,6 +569,36 @@ const App: React.FC = () => {
     await new Promise(resolve => setTimeout(resolve, 100)); // React state更新待機
     console.log(`🔒 #${callCount} 保存処理開始 - ロック中`);
     
+    // 🚨 重要: DOMスタイル反映の確実な待機（1回目の問題解決）
+    if (customImage && callCount === 1) {
+      console.log('🔄 1回目: カスタム画像のDOMスタイル反映を確実に待機...');
+      
+      // DOMスタイルが反映されるまで待機
+      let attempts = 0;
+      const maxAttempts = 10; // 最大3秒待機
+      
+      while (attempts < maxAttempts) {
+        const checkElement = document.getElementById('daily-log-card');
+        if (checkElement) {
+          const computedStyle = window.getComputedStyle(checkElement);
+          const bgImage = computedStyle.backgroundImage;
+          
+          if (bgImage !== 'none' && bgImage.includes('blob:')) {
+            console.log(`✅ DOMスタイル反映完了 - 試行回数: ${attempts + 1}`);
+            break;
+          }
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 300)); // 0.3秒ずつ待機
+        attempts++;
+        console.log(`⏳ DOMスタイル反映待機中... ${attempts}/${maxAttempts}`);
+      }
+      
+      if (attempts >= maxAttempts) {
+        console.warn('⚠️ DOMスタイル反映タイムアウト - 強制続行');
+      }
+    }
+    
     // 重要: ボタンイベントの即座実行を防ぐ
     console.log('⏳ 画像処理開始まで待機...');
     const cardElement = cardRef.current;
