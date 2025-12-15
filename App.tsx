@@ -538,15 +538,19 @@ const App: React.FC = () => {
     }
 
     try {
-      // 高品質画像変換（CORS対応）
+      // モバイル検出と設定最適化
+      const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+      
+      // 高品質画像変換（携帯対応）
       const config = {
         quality: 0.95,
-        pixelRatio: 2,
-        backgroundColor: '#ffffff',
-        cacheBust: false,
+        pixelRatio: isMobile ? 1.5 : 2, // 携帯では軽量化
+        backgroundColor: customImage ? null : '#ffffff',
+        cacheBust: customImage ? Date.now() : false, // カスタム画像時のキャッシュ回避
         useCORS: true,
         allowTaint: false,
-        skipFonts: true
+        skipFonts: true,
+        timeout: isMobile ? 20000 : 15000 // 携帯では長めのタイムアウト
       };
 
       // カスタム画像がある場合の特別処理
@@ -554,19 +558,43 @@ const App: React.FC = () => {
       
       // カスタム画像がある場合、画像の完全なロードを待つ
       if (customImage) {
-        console.log('📸 カスタム画像検出 - ロード完了を待機中...');
+        console.log('📸 カスタム画像検出:', {
+          customImageUrl: customImage,
+          userAgent: navigator.userAgent,
+          isMobile: /Mobi|Android/i.test(navigator.userAgent)
+        });
+        
         await new Promise((resolve) => {
           const img = cardElement.querySelector('img');
+          console.log('🖼️ 画像要素確認:', {
+            imgElement: img,
+            imgSrc: img?.src,
+            imgComplete: img?.complete,
+            imgNaturalWidth: img?.naturalWidth,
+            imgNaturalHeight: img?.naturalHeight
+          });
+          
           if (img) {
-            if (img.complete) {
+            if (img.complete && img.naturalWidth > 0) {
+              console.log('✅ 画像既読み込み済み');
               resolve(true);
             } else {
-              img.onload = () => resolve(true);
-              img.onerror = () => resolve(true);
-              // 最大3秒待機
-              setTimeout(() => resolve(true), 3000);
+              img.onload = () => {
+                console.log('✅ 画像onload完了');
+                resolve(true);
+              };
+              img.onerror = (e) => {
+                console.error('❌ 画像読み込みエラー:', e);
+                resolve(true);
+              };
+              // 携帯用に待機時間延長
+              setTimeout(() => {
+                console.warn('⏰ 画像読み込みタイムアウト');
+                resolve(true);
+              }, 5000);
             }
           } else {
+            console.warn('⚠️ img要素が見つからない');
             resolve(true);
           }
         });
