@@ -642,9 +642,20 @@ const App: React.FC = () => {
         // 画像データの実際の内容を確認
         if (customImage) {
           console.log('🔍 カスタム画像の変換結果確認中...');
+          
+          // 追加：初回処理用のさらなる待機
+          console.log('⏳ 初回カスタム画像処理の安定化待機...');
+          await new Promise(resolve => setTimeout(resolve, 1000)); // 1秒追加待機
+          
           const img = new Image();
           await new Promise((resolve, reject) => {
             img.onload = () => {
+              // さらに厳格な確認：画像サイズが妥当か
+              if (img.width < 100 || img.height < 100) {
+                console.warn('⚠️ 変換画像サイズ異常:', img.width, 'x', img.height);
+                setTimeout(() => resolve(true), 500); // 追加待機
+                return;
+              }
               console.log('✅ 変換画像確認完了:', img.width, 'x', img.height);
               resolve(true);
             };
@@ -653,12 +664,16 @@ const App: React.FC = () => {
               reject(new Error('変換画像の検証に失敗'));
             };
             img.src = dataUrl;
-            // 3秒でタイムアウト
+            // タイムアウト延長
             setTimeout(() => {
               console.warn('⏰ 変換画像確認タイムアウト');
               resolve(true);
-            }, 3000);
+            }, 5000); // 3秒→5秒に延長
           });
+          
+          // 追加：変換完了後のさらなる安定化待機
+          console.log('⏳ 変換完了後の安定化待機...');
+          await new Promise(resolve => setTimeout(resolve, 800)); // 0.8秒追加
         }
       } catch (corsError) {
         console.log('⚠️ 1st試行失敗、フォールバック設定で再試行:', corsError);
