@@ -678,16 +678,25 @@ const App: React.FC = () => {
       const dateStr = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
       const fileName = `健康記録_${dateStr}.png`;
 
+      // 画像生成完了確認
+      if (!dataUrl) {
+        throw new Error('画像生成が失敗しました');
+      }
+      
       if (buttonElement) {
         buttonElement.textContent = '共有準備中...';
       }
+      
+      console.log('🎯 画像生成完了確認 - Web Share API開始');
 
       // Web Share API対応チェック
       if (navigator.share) {
         try {
+          console.log('🔄 Blob変換開始...');
           // 画像をBlobに変換
           const response = await fetch(dataUrl);
           const blob = await response.blob();
+          console.log('✅ Blob変換完了:', blob.size, 'bytes');
           
           // ファイルサイズチェック（10MB未満に制限）
           if (blob.size > 10 * 1024 * 1024) {
@@ -695,14 +704,22 @@ const App: React.FC = () => {
           }
           
           const file = new File([blob], fileName, { type: 'image/png' });
+          console.log('📁 ファイル作成完了:', fileName);
+          
+          // 追加：少し待機してからシェア実行
+          console.log('⏳ 最終確認待機中...');
+          await new Promise(resolve => setTimeout(resolve, 500)); // 0.5秒待機
+          console.log('🚀 Web Share API実行開始');
 
           // ファイル共有サポートチェック
           if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            console.log('📱 iOS共有シート表示直前');
             // ネイティブ共有シートを表示
             await navigator.share({
               title: '健康記録',
               files: [file]
             });
+            console.log('✅ iOS共有完了');
 
             if (buttonElement) {
               buttonElement.textContent = '共有完了！';
