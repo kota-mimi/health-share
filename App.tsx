@@ -690,6 +690,13 @@ const App: React.FC = () => {
       }
 
       // Web Share API非対応の場合はフォールバック（直接ダウンロード）
+      console.log('💾 ダウンロード実行:', {
+        fileName,
+        dataUrlLength: dataUrl.length,
+        dataUrlPrefix: dataUrl.substring(0, 50),
+        hasCustomImage: !!customImage
+      });
+      
       const link = document.createElement('a');
       link.download = fileName;
       link.href = dataUrl;
@@ -697,6 +704,8 @@ const App: React.FC = () => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      
+      console.log('✅ ダウンロードリンククリック完了');
 
       if (buttonElement) {
         buttonElement.textContent = '保存完了！';
