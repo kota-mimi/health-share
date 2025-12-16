@@ -120,7 +120,7 @@ const UI_TEXT = {
     protein: 'タンパク質',
     fat: '脂質',
     carbs: '炭水化物',
-    exercise: '運動'
+    exercise: '運動',
     background: '背景設定',
     theme: 'テーマ',
     upload: '画像追加',
