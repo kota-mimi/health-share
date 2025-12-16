@@ -1118,7 +1118,7 @@ const App: React.FC = () => {
         </div>
 
         {/* Controls / Context Area */}
-        <div className="flex flex-col max-w-sm w-full space-y-5 h-[640px] overflow-y-auto pr-2">
+        <div className="flex flex-col max-w-sm w-full space-y-5 max-h-[85vh] overflow-y-auto pr-2">
 
           {/* Data Edit Section */}
           {!isEditMode ? (
