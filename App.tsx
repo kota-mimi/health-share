@@ -1219,21 +1219,25 @@ const App: React.FC = () => {
              </button>
 
              <button 
+                onClick={() => setHideWeight(!hideWeight)}
+                className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg border text-xs transition-colors ${hideWeight ? 'bg-blue-100 border-blue-300 text-blue-900' : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200'}`}
+              >
+                {hideWeight ? <EyeOff size={12} /> : <Eye size={12} />}
+                <span>{hideWeight ? "非表示" : "体重"}</span>
+             </button>
+
+             <button 
                 onClick={() => {
-                  if (!isEditMode) {
-                    if (!hideWeight) {
-                      setHideWeight(true);
-                    } else {
-                      startEditMode();
-                    }
+                  if (isEditMode) {
+                    cancelEdit();
                   } else {
-                    setHideWeight(false);
+                    startEditMode();
                   }
                 }}
-                className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg border text-xs transition-colors ${isEditMode ? 'bg-green-100 border-green-300 text-green-900' : hideWeight ? 'bg-blue-100 border-blue-300 text-blue-900' : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200'}`}
+                className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg border text-xs transition-colors ${isEditMode ? 'bg-green-100 border-green-300 text-green-900' : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200'}`}
               >
-                {isEditMode ? <Edit3 size={12} /> : hideWeight ? <EyeOff size={12} /> : <Eye size={12} />}
-                <span>{isEditMode ? "編集中" : hideWeight ? "非表示" : "体重"}</span>
+                <Edit3 size={12} />
+                <span>{isEditMode ? "編集中" : "編集"}</span>
              </button>
 
              <div className="relative">
