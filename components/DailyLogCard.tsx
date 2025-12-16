@@ -340,8 +340,8 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
                 <div className="flex justify-between items-end mb-2 sm:mb-3">
                   <span className={`text-[8px] sm:text-[10px] uppercase ${fonts.label} ${styles.textMuted}`}>How was your day?</span>
                 </div>
-                <div className="flex items-center">
-                  <span className={`text-sm sm:text-base ${fonts.val} ${styles.textPrimary}`}>
+                <div className="flex items-start">
+                  <span className={`text-sm sm:text-base ${fonts.val} ${styles.textPrimary} whitespace-pre-line`}>
                     {reflectionAnswer === 'custom' 
                       ? (customReflectionText || 'カスタム入力...') 
                       : REFLECTION_ANSWERS.find(a => a.id === reflectionAnswer)?.text.replace(/[⭐😊😐🎉😔✏️]/g, '').trim()
