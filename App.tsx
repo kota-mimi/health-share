@@ -91,7 +91,16 @@ const UI_TEXT = {
     simulate: 'Simulate New Day',
     accentColor: 'Accent Color',
     shareSave: 'Share',
-    dragHint: 'Drag • Pinch • Double tap to exit'
+    dragHint: 'Drag • Pinch • Double tap to exit',
+    editData: 'Edit Data',
+    saveChanges: 'Save Changes',
+    cancelEdit: 'Cancel',
+    weight: 'Weight',
+    calories: 'Calories',
+    protein: 'Protein',
+    fat: 'Fat', 
+    carbs: 'Carbs',
+    exercise: 'Exercise'
   },
   ja: {
     title: 'ヘルシーシェア プロ',
@@ -103,6 +112,15 @@ const UI_TEXT = {
     zoomLevel: '拡大レベル',
     zoomHint: 'ピンチやホイールで拡大・縮小できます',
     resetLayout: '配置をリセット',
+    editData: 'データ編集',
+    saveChanges: '変更を保存',
+    cancelEdit: 'キャンセル',
+    weight: '体重',
+    calories: 'カロリー',
+    protein: 'タンパク質',
+    fat: '脂質',
+    carbs: '炭水化物',
+    exercise: '運動'
     background: '背景設定',
     theme: 'テーマ',
     upload: '画像追加',
@@ -273,6 +291,8 @@ const App: React.FC = () => {
   const [overlayOpacity, setOverlayOpacity] = useState(0.7);
   // Enhanced interaction states
   const [interactionMode, setInteractionMode] = useState<'view' | 'edit' | 'customize'>('view');
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editData, setEditData] = useState<DailyLogData | null>(null);
   const [lastInteraction, setLastInteraction] = useState<number>(Date.now());
   const [layoutConfig, setLayoutConfig] = useState<LayoutConfig>(INITIAL_LAYOUT);
   const [globalScale, setGlobalScale] = useState(1);
@@ -312,6 +332,40 @@ const App: React.FC = () => {
   const handleLayoutChange = (x: number, y: number) => {
     setLayoutConfig({ x, y });
     setLastInteraction(Date.now());
+  };
+
+  // データ編集機能
+  const startEditMode = () => {
+    setIsEditMode(true);
+    setEditData(data ? { ...data } : null);
+  };
+
+  const cancelEdit = () => {
+    setIsEditMode(false);
+    setEditData(null);
+  };
+
+  const saveEditedData = () => {
+    if (editData) {
+      setData(editData);
+      setIsEditMode(false);
+      setEditData(null);
+    }
+  };
+
+  const updateEditField = (field: string, value: any) => {
+    if (editData) {
+      const newData = { ...editData };
+      const keys = field.split('.');
+      let target = newData as any;
+      
+      for (let i = 0; i < keys.length - 1; i++) {
+        target = target[keys[i]];
+      }
+      target[keys[keys.length - 1]] = value;
+      
+      setEditData(newData);
+    }
   };
 
   // ひとことドロップダウンの外部クリックで閉じる
@@ -1030,7 +1084,7 @@ const App: React.FC = () => {
           }`}></div>
           <div className="relative">
              <DailyLogCard 
-               data={data} 
+               data={isEditMode ? editData : data} 
                theme={theme} 
                id="share-card" 
                isJapanese={isJapanese}
@@ -1065,6 +1119,140 @@ const App: React.FC = () => {
 
         {/* Controls / Context Area */}
         <div className="flex flex-col max-w-sm w-full space-y-5 h-[640px] overflow-y-auto pr-2">
+
+          {/* Data Edit Section */}
+          {!isEditMode ? (
+            <button 
+              onClick={startEditMode}
+              className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-blue-100 border border-blue-300 text-blue-700 hover:bg-blue-200 transition-colors"
+            >
+              <Edit3 size={16} />
+              <span className="font-medium">{ui.editData}</span>
+            </button>
+          ) : (
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <button 
+                  onClick={saveEditedData}
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-green-100 border border-green-300 text-green-700 hover:bg-green-200 transition-colors"
+                >
+                  <Check size={14} />
+                  <span className="text-xs font-medium">{ui.saveChanges}</span>
+                </button>
+                <button 
+                  onClick={cancelEdit}
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-gray-100 border border-gray-300 text-gray-700 hover:bg-gray-200 transition-colors"
+                >
+                  <X size={14} />
+                  <span className="text-xs font-medium">{ui.cancelEdit}</span>
+                </button>
+              </div>
+              
+              {/* Edit Form */}
+              {editData && (
+                <div className="bg-gray-50 rounded-lg p-3 space-y-3">
+                  {/* Weight */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">{ui.weight}</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={editData.weight.current}
+                          onChange={(e) => updateEditField('weight.current', parseFloat(e.target.value) || 0)}
+                          className="w-full px-2 py-1 border border-gray-300 rounded text-xs"
+                          placeholder="現在"
+                        />
+                      </div>
+                      <div>
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={editData.weight.diff}
+                          onChange={(e) => updateEditField('weight.diff', parseFloat(e.target.value) || 0)}
+                          className="w-full px-2 py-1 border border-gray-300 rounded text-xs"
+                          placeholder="前日比"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Calories */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">{ui.calories}</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        type="number"
+                        value={editData.calories.current}
+                        onChange={(e) => updateEditField('calories.current', parseInt(e.target.value) || 0)}
+                        className="w-full px-2 py-1 border border-gray-300 rounded text-xs"
+                        placeholder="摂取"
+                      />
+                      <input
+                        type="number"
+                        value={editData.calories.target}
+                        onChange={(e) => updateEditField('calories.target', parseInt(e.target.value) || 0)}
+                        className="w-full px-2 py-1 border border-gray-300 rounded text-xs"
+                        placeholder="目標"
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* PFC */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">PFC</label>
+                    <div className="space-y-2">
+                      <div className="grid grid-cols-3 gap-1 text-xs">
+                        <span>P</span><span>F</span><span>C</span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-1">
+                        <input
+                          type="number"
+                          value={editData.pfc.p.current}
+                          onChange={(e) => updateEditField('pfc.p.current', parseInt(e.target.value) || 0)}
+                          className="w-full px-1 py-1 border border-gray-300 rounded text-xs"
+                        />
+                        <input
+                          type="number"
+                          value={editData.pfc.f.current}
+                          onChange={(e) => updateEditField('pfc.f.current', parseInt(e.target.value) || 0)}
+                          className="w-full px-1 py-1 border border-gray-300 rounded text-xs"
+                        />
+                        <input
+                          type="number"
+                          value={editData.pfc.c.current}
+                          onChange={(e) => updateEditField('pfc.c.current', parseInt(e.target.value) || 0)}
+                          className="w-full px-1 py-1 border border-gray-300 rounded text-xs"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Exercise */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">{ui.exercise}</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        type="number"
+                        value={editData.exercise.minutes}
+                        onChange={(e) => updateEditField('exercise.minutes', parseInt(e.target.value) || 0)}
+                        className="w-full px-2 py-1 border border-gray-300 rounded text-xs"
+                        placeholder="分"
+                      />
+                      <input
+                        type="number"
+                        value={editData.exercise.caloriesBurned}
+                        onChange={(e) => updateEditField('exercise.caloriesBurned', parseInt(e.target.value) || 0)}
+                        className="w-full px-2 py-1 border border-gray-300 rounded text-xs"
+                        placeholder="消費Cal"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Settings Toggles */}
           <div className="grid grid-cols-2 gap-2">
