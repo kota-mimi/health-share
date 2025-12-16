@@ -1157,34 +1157,37 @@ const App: React.FC = () => {
 
                   {/* Calories Section */}
                   <div className="bg-gray-50 rounded-lg p-3">
-                    <label className="block text-xs font-medium text-gray-700 mb-2">摂取カロリー</label>
-                    <input
-                      type="number"
-                      value={editData.calories.current}
-                      onChange={(e) => updateEditField('calories.current', parseInt(e.target.value) || 0)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="1850"
-                    />
-                  </div>
-
-                  {/* Exercise Section */}
-                  <div className="bg-gray-50 rounded-lg p-3">
-                    <label className="block text-xs font-medium text-gray-700 mb-2">消費カロリー</label>
-                    <input
-                      type="number"
-                      value={editData.exercise.caloriesBurned}
-                      onChange={(e) => updateEditField('exercise.caloriesBurned', parseInt(e.target.value) || 0)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="320"
-                    />
+                    <label className="block text-xs font-medium text-gray-700 mb-2">カロリー</label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs text-gray-600 mb-1">摂取カロリー</label>
+                        <input
+                          type="number"
+                          value={editData.calories.current}
+                          onChange={(e) => updateEditField('calories.current', parseInt(e.target.value) || 0)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="1850"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-600 mb-1">消費カロリー</label>
+                        <input
+                          type="number"
+                          value={editData.exercise.caloriesBurned}
+                          onChange={(e) => updateEditField('exercise.caloriesBurned', parseInt(e.target.value) || 0)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="320"
+                        />
+                      </div>
+                    </div>
                   </div>
 
                   {/* PFC Section */}
                   <div className="bg-gray-50 rounded-lg p-3">
                     <label className="block text-xs font-medium text-gray-700 mb-2">PFCバランス</label>
-                    <div className="space-y-3">
+                    <div className="grid grid-cols-3 gap-2">
                       <div>
-                        <label className="block text-xs text-gray-600 mb-1">タンパク質 (g)</label>
+                        <label className="block text-xs text-gray-600 mb-1">P (g)</label>
                         <input
                           type="number"
                           value={editData.pfc.p.current}
@@ -1194,7 +1197,7 @@ const App: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs text-gray-600 mb-1">脂質 (g)</label>
+                        <label className="block text-xs text-gray-600 mb-1">F (g)</label>
                         <input
                           type="number"
                           value={editData.pfc.f.current}
@@ -1204,7 +1207,7 @@ const App: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs text-gray-600 mb-1">炭水化物 (g)</label>
+                        <label className="block text-xs text-gray-600 mb-1">C (g)</label>
                         <input
                           type="number"
                           value={editData.pfc.c.current}
