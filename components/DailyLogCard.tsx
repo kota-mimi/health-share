@@ -166,7 +166,7 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
   return (
     <div 
       id={id}
-      className={`w-[300px] h-[480px] sm:w-[375px] sm:h-[640px] ${!customImage ? bgClass : 'bg-black'} relative overflow-hidden flex flex-col select-none shadow-2xl transition-colors duration-500`}
+      className={`w-[250px] h-[380px] sm:w-[300px] sm:h-[480px] ${!customImage ? bgClass : 'bg-black'} relative overflow-hidden flex flex-col select-none shadow-2xl transition-colors duration-500`}
       style={{
         boxShadow: '0 0 50px -12px rgba(0,0,0,0.5)',
         maxWidth: '90vw',
@@ -207,7 +207,7 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
         >
           {/* Separate scaling layer */}
           <div 
-            className="w-full h-full p-4 sm:p-6"
+            className="w-full h-full p-3 sm:p-4"
             style={{
                transform: `scale(${globalScale})`,
                transformOrigin: 'center center'
