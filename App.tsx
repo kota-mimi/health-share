@@ -1360,13 +1360,13 @@ const App: React.FC = () => {
                {/* カスタム入力フィールド */}
                {showReflection && reflectionAnswer === 'custom' && (
                  <div className="mt-2 p-3 bg-white border border-gray-300 rounded-lg">
-                   <input
-                     type="text"
-                     placeholder="ひとこと (例: 今日は充実していた)"
+                   <textarea
+                     placeholder="ひとこと (例: 今日は充実していた&#13;&#10;明日も頑張ろう！)"
                      value={customReflectionText}
                      onChange={(e) => setCustomReflectionText(e.target.value)}
-                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-vertical min-h-[60px]"
                      autoFocus
+                     rows={3}
                    />
                  </div>
                )}
