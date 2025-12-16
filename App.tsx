@@ -1140,10 +1140,11 @@ const App: React.FC = () => {
                 </button>
               </div>
               
-              {/* Weight Edit Form Only */}
+              {/* Full Data Edit Form */}
               {editData && (
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <div>
+                <div className="space-y-4">
+                  {/* Weight Section */}
+                  <div className="bg-gray-50 rounded-lg p-3">
                     <label className="block text-xs font-medium text-gray-700 mb-2">{ui.weight}</label>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
@@ -1167,6 +1168,133 @@ const App: React.FC = () => {
                           className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="-0.3"
                         />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Calories Section */}
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <label className="block text-xs font-medium text-gray-700 mb-2">{ui.calories}</label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs text-gray-600 mb-1">摂取カロリー</label>
+                        <input
+                          type="number"
+                          value={editData.calories.current}
+                          onChange={(e) => updateEditField('calories.current', parseInt(e.target.value) || 0)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="1850"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-600 mb-1">目標カロリー</label>
+                        <input
+                          type="number"
+                          value={editData.calories.target}
+                          onChange={(e) => updateEditField('calories.target', parseInt(e.target.value) || 0)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="2100"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Exercise Section */}
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <label className="block text-xs font-medium text-gray-700 mb-2">運動</label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs text-gray-600 mb-1">運動時間 (分)</label>
+                        <input
+                          type="number"
+                          value={editData.exercise.minutes}
+                          onChange={(e) => updateEditField('exercise.minutes', parseInt(e.target.value) || 0)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="45"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-600 mb-1">消費カロリー</label>
+                        <input
+                          type="number"
+                          value={editData.exercise.caloriesBurned}
+                          onChange={(e) => updateEditField('exercise.caloriesBurned', parseInt(e.target.value) || 0)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="320"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* PFC Section */}
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <label className="block text-xs font-medium text-gray-700 mb-2">PFCバランス</label>
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs text-gray-600 mb-1">タンパク質 (g)</label>
+                          <input
+                            type="number"
+                            value={editData.pfc.p.current}
+                            onChange={(e) => updateEditField('pfc.p.current', parseInt(e.target.value) || 0)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="145"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-600 mb-1">目標 (g)</label>
+                          <input
+                            type="number"
+                            value={editData.pfc.p.target}
+                            onChange={(e) => updateEditField('pfc.p.target', parseInt(e.target.value) || 0)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="160"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs text-gray-600 mb-1">脂質 (g)</label>
+                          <input
+                            type="number"
+                            value={editData.pfc.f.current}
+                            onChange={(e) => updateEditField('pfc.f.current', parseInt(e.target.value) || 0)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="48"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-600 mb-1">目標 (g)</label>
+                          <input
+                            type="number"
+                            value={editData.pfc.f.target}
+                            onChange={(e) => updateEditField('pfc.f.target', parseInt(e.target.value) || 0)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="65"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs text-gray-600 mb-1">炭水化物 (g)</label>
+                          <input
+                            type="number"
+                            value={editData.pfc.c.current}
+                            onChange={(e) => updateEditField('pfc.c.current', parseInt(e.target.value) || 0)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="210"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-600 mb-1">目標 (g)</label>
+                          <input
+                            type="number"
+                            value={editData.pfc.c.target}
+                            onChange={(e) => updateEditField('pfc.c.target', parseInt(e.target.value) || 0)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="240"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
