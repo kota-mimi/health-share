@@ -1148,105 +1148,34 @@ const App: React.FC = () => {
                 </button>
               </div>
               
-              {/* Edit Form */}
+              {/* Weight Edit Form Only */}
               {editData && (
-                <div className="bg-gray-50 rounded-lg p-3 space-y-3">
-                  {/* Weight */}
+                <div className="bg-gray-50 rounded-lg p-3">
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">{ui.weight}</label>
-                    <div className="grid grid-cols-2 gap-2">
+                    <label className="block text-xs font-medium text-gray-700 mb-2">{ui.weight}</label>
+                    <div className="grid grid-cols-2 gap-3">
                       <div>
+                        <label className="block text-xs text-gray-600 mb-1">現在の体重 (kg)</label>
                         <input
                           type="number"
                           step="0.1"
                           value={editData.weight.current}
                           onChange={(e) => updateEditField('weight.current', parseFloat(e.target.value) || 0)}
-                          className="w-full px-2 py-1 border border-gray-300 rounded text-xs"
-                          placeholder="現在"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                          placeholder="72.5"
                         />
                       </div>
                       <div>
+                        <label className="block text-xs text-gray-600 mb-1">前日比 (kg)</label>
                         <input
                           type="number"
                           step="0.1"
                           value={editData.weight.diff}
                           onChange={(e) => updateEditField('weight.diff', parseFloat(e.target.value) || 0)}
-                          className="w-full px-2 py-1 border border-gray-300 rounded text-xs"
-                          placeholder="前日比"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                          placeholder="-0.3"
                         />
                       </div>
-                    </div>
-                  </div>
-                  
-                  {/* Calories */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">{ui.calories}</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <input
-                        type="number"
-                        value={editData.calories.current}
-                        onChange={(e) => updateEditField('calories.current', parseInt(e.target.value) || 0)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-xs"
-                        placeholder="摂取"
-                      />
-                      <input
-                        type="number"
-                        value={editData.calories.target}
-                        onChange={(e) => updateEditField('calories.target', parseInt(e.target.value) || 0)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-xs"
-                        placeholder="目標"
-                      />
-                    </div>
-                  </div>
-                  
-                  {/* PFC */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">PFC</label>
-                    <div className="space-y-2">
-                      <div className="grid grid-cols-3 gap-1 text-xs">
-                        <span>P</span><span>F</span><span>C</span>
-                      </div>
-                      <div className="grid grid-cols-3 gap-1">
-                        <input
-                          type="number"
-                          value={editData.pfc.p.current}
-                          onChange={(e) => updateEditField('pfc.p.current', parseInt(e.target.value) || 0)}
-                          className="w-full px-1 py-1 border border-gray-300 rounded text-xs"
-                        />
-                        <input
-                          type="number"
-                          value={editData.pfc.f.current}
-                          onChange={(e) => updateEditField('pfc.f.current', parseInt(e.target.value) || 0)}
-                          className="w-full px-1 py-1 border border-gray-300 rounded text-xs"
-                        />
-                        <input
-                          type="number"
-                          value={editData.pfc.c.current}
-                          onChange={(e) => updateEditField('pfc.c.current', parseInt(e.target.value) || 0)}
-                          className="w-full px-1 py-1 border border-gray-300 rounded text-xs"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Exercise */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">{ui.exercise}</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <input
-                        type="number"
-                        value={editData.exercise.minutes}
-                        onChange={(e) => updateEditField('exercise.minutes', parseInt(e.target.value) || 0)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-xs"
-                        placeholder="分"
-                      />
-                      <input
-                        type="number"
-                        value={editData.exercise.caloriesBurned}
-                        onChange={(e) => updateEditField('exercise.caloriesBurned', parseInt(e.target.value) || 0)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-xs"
-                        placeholder="消費Cal"
-                      />
                     </div>
                   </div>
                 </div>
