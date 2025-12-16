@@ -1173,7 +1173,7 @@ const App: React.FC = () => {
                 </div>
               )}
             </div>
-          )}
+          ) : null}
 
           {/* Settings Toggles */}
           <div className="grid grid-cols-2 gap-2">
