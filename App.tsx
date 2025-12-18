@@ -1164,7 +1164,7 @@ const App: React.FC = () => {
                             min="0"
                             value={Math.abs(editData.weight.diff || 0)}
                             onChange={(e) => {
-                              const absValue = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                              const absValue = e.target.value === '' ? '' : parseFloat(e.target.value);
                               const currentSign = editData.weight.diff >= 0 ? 1 : -1;
                               updateEditField('weight.diff', currentSign * absValue);
                             }}
