@@ -1168,7 +1168,7 @@ const App: React.FC = () => {
                               const currentSign = editData.weight.diff >= 0 ? 1 : -1;
                               updateEditField('weight.diff', currentSign * absValue);
                             }}
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-16 px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="0.3"
                           />
                         </div>
