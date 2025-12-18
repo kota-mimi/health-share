@@ -1162,10 +1162,10 @@ const App: React.FC = () => {
                             inputMode="decimal"
                             step="0.1"
                             min="0"
-                            value={editData.weight.diff === '' || editData.weight.diff == null ? '' : Math.abs(editData.weight.diff)}
+                            value={editData.weight.diff == null ? '' : Math.abs(editData.weight.diff || 0)}
                             onChange={(e) => {
                               if (e.target.value === '') {
-                                updateEditField('weight.diff', '');
+                                updateEditField('weight.diff', null);
                               } else {
                                 const absValue = parseFloat(e.target.value);
                                 const currentSign = editData.weight.diff >= 0 ? 1 : -1;
