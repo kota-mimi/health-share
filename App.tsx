@@ -1129,7 +1129,7 @@ const App: React.FC = () => {
                   {/* Weight Section */}
                   <div className="bg-gray-50 rounded-lg p-3">
                     <label className="block text-xs font-medium text-gray-700 mb-2">{ui.weight}</label>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-3">
                       <div>
                         <label className="block text-xs text-gray-600 mb-1">現在の体重 (kg)</label>
                         <input
