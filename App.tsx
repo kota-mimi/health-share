@@ -1144,15 +1144,34 @@ const App: React.FC = () => {
                       </div>
                       <div>
                         <label className="block text-xs text-gray-600 mb-1">前日比 (kg)</label>
-                        <input
-                          type="number"
-                          inputMode="decimal"
-                          step="0.1"
-                          value={editData.weight.diff}
-                          onChange={(e) => updateEditField('weight.diff', e.target.value === '' ? '' : parseFloat(e.target.value))}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="-0.3"
-                        />
+                        <div className="flex gap-2">
+                          <select
+                            value={editData.weight.diff >= 0 ? '+' : '-'}
+                            onChange={(e) => {
+                              const currentAbs = Math.abs(editData.weight.diff || 0);
+                              const newValue = e.target.value === '+' ? currentAbs : -currentAbs;
+                              updateEditField('weight.diff', newValue);
+                            }}
+                            className="px-2 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="+">+</option>
+                            <option value="-">-</option>
+                          </select>
+                          <input
+                            type="number"
+                            inputMode="decimal"
+                            step="0.1"
+                            min="0"
+                            value={Math.abs(editData.weight.diff || 0)}
+                            onChange={(e) => {
+                              const absValue = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                              const currentSign = editData.weight.diff >= 0 ? 1 : -1;
+                              updateEditField('weight.diff', currentSign * absValue);
+                            }}
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="0.3"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
