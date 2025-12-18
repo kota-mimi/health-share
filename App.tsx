@@ -1162,7 +1162,7 @@ const App: React.FC = () => {
                             inputMode="decimal"
                             step="0.1"
                             min="0"
-                            value={Math.abs(editData.weight.diff || 0)}
+                            value={editData.weight.diff === '' || editData.weight.diff == null ? '' : Math.abs(editData.weight.diff)}
                             onChange={(e) => {
                               if (e.target.value === '') {
                                 updateEditField('weight.diff', '');
