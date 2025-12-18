@@ -246,7 +246,7 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
                       </div>
                       <div className={`flex items-center gap-1 mt-1 text-[10px] ${fonts.val} ${diffColor}`}>
                         {getWeightDiffIcon(data.weight.diff)}
-                        <span>{Math.abs(data.weight.diff)} kg</span>
+                        <span>{Math.round(Math.abs(data.weight.diff) * 10) / 10} kg</span>
                       </div>
                     </div>
                   )}

@@ -213,7 +213,7 @@ const App: React.FC = () => {
             date: new Date(decodedData.date || new Date()),
             weight: {
               current: decodedData.weight || 0,
-              diff: decodedData.weightDiff || 0,
+              diff: Math.round((decodedData.weightDiff || 0) * 10) / 10,
             },
             calories: {
               current: parseInt(decodedData.calories) || 0,
