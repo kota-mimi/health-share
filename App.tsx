@@ -1118,7 +1118,7 @@ const App: React.FC = () => {
         </div>
 
         {/* Controls / Context Area */}
-        <div className="flex flex-col max-w-xs w-full space-y-4 max-h-[85vh] overflow-y-auto pr-2">
+        <div className="flex flex-col max-w-xs w-full space-y-4 max-h-[85vh] overflow-y-auto pr-2 overflow-x-hidden">
 
           {/* Weight Edit Section */}
           {isEditMode ? (
@@ -1129,7 +1129,7 @@ const App: React.FC = () => {
                   {/* Weight Section */}
                   <div className="bg-gray-50 rounded-lg p-3">
                     <label className="block text-xs font-medium text-gray-700 mb-2">{ui.weight}</label>
-                    <div className="grid grid-cols-2 gap-1">
+                    <div className="grid grid-cols-2 gap-3">
                       <div>
                         <label className="block text-xs text-gray-600 mb-1">現在の体重 (kg)</label>
                         <input
@@ -1138,7 +1138,7 @@ const App: React.FC = () => {
                           step="0.1"
                           value={editData.weight.current}
                           onChange={(e) => updateEditField('weight.current', e.target.value === '' ? '' : parseFloat(e.target.value))}
-                          className="w-full px-1 py-1 border border-gray-300 rounded text-xs bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="72.5"
                         />
                       </div>
@@ -1152,7 +1152,7 @@ const App: React.FC = () => {
                               const newValue = e.target.value === '+' ? currentAbs : -currentAbs;
                               updateEditField('weight.diff', newValue);
                             }}
-                            className="w-6 px-0 py-1 border border-gray-300 rounded text-xs bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500 text-center"
+                            className="w-12 px-2 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 text-center"
                           >
                             <option value="+">+</option>
                             <option value="-">-</option>
@@ -1168,7 +1168,7 @@ const App: React.FC = () => {
                               const currentSign = editData.weight.diff >= 0 ? 1 : -1;
                               updateEditField('weight.diff', currentSign * absValue);
                             }}
-                            className="flex-1 px-1 py-1 border border-gray-300 rounded text-xs bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="0.3"
                           />
                         </div>
