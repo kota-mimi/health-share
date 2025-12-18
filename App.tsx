@@ -1134,9 +1134,10 @@ const App: React.FC = () => {
                         <label className="block text-xs text-gray-600 mb-1">現在の体重 (kg)</label>
                         <input
                           type="number"
+                          inputMode="decimal"
                           step="0.1"
                           value={editData.weight.current}
-                          onChange={(e) => updateEditField('weight.current', parseFloat(e.target.value) || 0)}
+                          onChange={(e) => updateEditField('weight.current', e.target.value === '' ? '' : parseFloat(e.target.value))}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="72.5"
                         />
@@ -1145,9 +1146,10 @@ const App: React.FC = () => {
                         <label className="block text-xs text-gray-600 mb-1">前日比 (kg)</label>
                         <input
                           type="number"
+                          inputMode="decimal"
                           step="0.1"
                           value={editData.weight.diff}
-                          onChange={(e) => updateEditField('weight.diff', parseFloat(e.target.value) || 0)}
+                          onChange={(e) => updateEditField('weight.diff', e.target.value === '' ? '' : parseFloat(e.target.value))}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="-0.3"
                         />
@@ -1163,8 +1165,9 @@ const App: React.FC = () => {
                         <label className="block text-xs text-gray-600 mb-1">摂取カロリー</label>
                         <input
                           type="number"
+                          inputMode="numeric"
                           value={editData.calories.current}
-                          onChange={(e) => updateEditField('calories.current', parseInt(e.target.value) || 0)}
+                          onChange={(e) => updateEditField('calories.current', e.target.value === '' ? '' : parseInt(e.target.value))}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="1850"
                         />
@@ -1173,8 +1176,9 @@ const App: React.FC = () => {
                         <label className="block text-xs text-gray-600 mb-1">消費カロリー</label>
                         <input
                           type="number"
+                          inputMode="numeric"
                           value={editData.exercise.caloriesBurned}
-                          onChange={(e) => updateEditField('exercise.caloriesBurned', parseInt(e.target.value) || 0)}
+                          onChange={(e) => updateEditField('exercise.caloriesBurned', e.target.value === '' ? '' : parseInt(e.target.value))}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="320"
                         />
@@ -1190,8 +1194,9 @@ const App: React.FC = () => {
                         <label className="block text-xs text-gray-600 mb-1">P (g)</label>
                         <input
                           type="number"
+                          inputMode="numeric"
                           value={editData.pfc.p.current}
-                          onChange={(e) => updateEditField('pfc.p.current', parseInt(e.target.value) || 0)}
+                          onChange={(e) => updateEditField('pfc.p.current', e.target.value === '' ? '' : parseInt(e.target.value))}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="145"
                         />
@@ -1200,8 +1205,9 @@ const App: React.FC = () => {
                         <label className="block text-xs text-gray-600 mb-1">F (g)</label>
                         <input
                           type="number"
+                          inputMode="numeric"
                           value={editData.pfc.f.current}
-                          onChange={(e) => updateEditField('pfc.f.current', parseInt(e.target.value) || 0)}
+                          onChange={(e) => updateEditField('pfc.f.current', e.target.value === '' ? '' : parseInt(e.target.value))}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="48"
                         />
@@ -1210,8 +1216,9 @@ const App: React.FC = () => {
                         <label className="block text-xs text-gray-600 mb-1">C (g)</label>
                         <input
                           type="number"
+                          inputMode="numeric"
                           value={editData.pfc.c.current}
-                          onChange={(e) => updateEditField('pfc.c.current', parseInt(e.target.value) || 0)}
+                          onChange={(e) => updateEditField('pfc.c.current', e.target.value === '' ? '' : parseInt(e.target.value))}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="210"
                         />
