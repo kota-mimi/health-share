@@ -1144,7 +1144,7 @@ const App: React.FC = () => {
                       </div>
                       <div>
                         <label className="block text-xs text-gray-600 mb-1">前日比 (kg)</label>
-                        <div className="flex gap-2">
+                        <div className="flex gap-1">
                           <select
                             value={editData.weight.diff >= 0 ? '+' : '-'}
                             onChange={(e) => {
@@ -1152,7 +1152,7 @@ const App: React.FC = () => {
                               const newValue = e.target.value === '+' ? currentAbs : -currentAbs;
                               updateEditField('weight.diff', newValue);
                             }}
-                            className="px-2 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-12 px-1 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 text-center"
                           >
                             <option value="+">+</option>
                             <option value="-">-</option>
@@ -1168,7 +1168,7 @@ const App: React.FC = () => {
                               const currentSign = editData.weight.diff >= 0 ? 1 : -1;
                               updateEditField('weight.diff', currentSign * absValue);
                             }}
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="flex-1 px-2 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="0.3"
                           />
                         </div>
