@@ -1164,9 +1164,13 @@ const App: React.FC = () => {
                             min="0"
                             value={Math.abs(editData.weight.diff || 0)}
                             onChange={(e) => {
-                              const absValue = e.target.value === '' ? '' : parseFloat(e.target.value);
-                              const currentSign = editData.weight.diff >= 0 ? 1 : -1;
-                              updateEditField('weight.diff', currentSign * absValue);
+                              if (e.target.value === '') {
+                                updateEditField('weight.diff', '');
+                              } else {
+                                const absValue = parseFloat(e.target.value);
+                                const currentSign = editData.weight.diff >= 0 ? 1 : -1;
+                                updateEditField('weight.diff', currentSign * absValue);
+                              }
                             }}
                             className="w-16 px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="0.3"
