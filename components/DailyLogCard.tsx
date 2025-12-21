@@ -326,14 +326,14 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
             )}
 
             {/* Daily Reflection */}
-            {showReflection && reflectionAnswer && (
+            {showReflection && customReflectionText && (
               <div className="mt-6 sm:mt-8">
                 <div className="flex justify-between items-end mb-2 sm:mb-3">
                   <span className={`text-[8px] sm:text-[10px] uppercase ${fonts.label} ${styles.textMuted}`}>How was your day?</span>
                 </div>
                 <div className="flex items-start">
                   <span className={`text-sm sm:text-base ${fonts.val} ${numColorClass} whitespace-pre-line`}>
-                    {customReflectionText || 'メモなし'}
+                    {customReflectionText || 'カスタム入力...'}
                   </span>
                 </div>
               </div>

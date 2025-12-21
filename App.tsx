@@ -1311,32 +1311,26 @@ const App: React.FC = () => {
                 <span>{isEditMode ? "編集中" : "編集"}</span>
              </button>
 
-             <div className="space-y-2">
-               <div className="flex items-center justify-between">
-                 <h3 className="text-[10px] font-bold uppercase text-zinc-700 tracking-wider">メモ</h3>
-                 <button 
-                   onClick={() => setShowReflection(!showReflection)}
-                   className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono transition-colors ${showReflection ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-                 >
-                   <MessageSquare size={10} />
-                   {showReflection ? "ON" : "OFF"}
-                 </button>
-               </div>
+             <div className="relative">
+               <button 
+                  onClick={() => setShowReflection(!showReflection)}
+                  className={`w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg border text-xs font-mono transition-colors ${showReflection ? 'bg-blue-100 border-blue-300 text-blue-900' : 'bg-gray-100 border-gray-300 text-gray-700 hover:text-gray-900'}`}
+                >
+                  <MessageSquare size={12} />
+                  {showReflection ? "ひとこと" : "ひとこと無し"}
+               </button>
                
+               {/* カスタム入力フィールド */}
                {showReflection && (
-                 <div className="bg-white border border-gray-300 rounded-lg p-3">
+                 <div className="mt-2 p-3 bg-white border border-gray-300 rounded-lg">
                    <textarea
-                     placeholder="今日のひとこと (例: 目標達成できて嬉しい！)"
+                     placeholder="ひとこと (例: 今日は充実していた&#13;&#10;明日も頑張ろう！)"
                      value={customReflectionText}
                      onChange={(e) => setCustomReflectionText(e.target.value)}
-                     className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white resize-none"
+                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-vertical min-h-[60px]"
+                     autoFocus
                      rows={3}
-                     maxLength={100}
                    />
-                   <div className="flex justify-between items-center mt-2 text-xs text-gray-500">
-                     <span>自由にメッセージを入力してください</span>
-                     <span>{customReflectionText.length}/100</span>
-                   </div>
                  </div>
                )}
              </div>
