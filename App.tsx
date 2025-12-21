@@ -58,14 +58,6 @@ const NUMBER_COLORS = [
   { id: 'pink', value: 'text-pink-500', name: 'Pink', bg: 'bg-pink-500' },
 ];
 
-const REFLECTION_ANSWERS = [
-  { id: 'custom', text: 'ひとこと', emoji: '✏️' },
-  { id: 'yes-absolutely', text: 'Yes, absolutely! ⭐', emoji: '⭐' },
-  { id: 'pretty-good', text: 'Pretty good! 😊', emoji: '😊' },
-  { id: 'it-was-okay', text: 'It was okay 😐', emoji: '😐' },
-  { id: 'amazing-day', text: 'Amazing day! 🎉', emoji: '🎉' },
-  { id: 'not-really', text: 'Not really... 😔', emoji: '😔' },
-];
 
 const INITIAL_LAYOUT: LayoutConfig = {
   x: 0, 
@@ -282,8 +274,6 @@ const App: React.FC = () => {
   
   // Daily reflection feature
   const [showReflection, setShowReflection] = useState(false);
-  const [reflectionAnswer, setReflectionAnswer] = useState<string>('');
-  const [showReflectionDropdown, setShowReflectionDropdown] = useState(false);
   const [customReflectionText, setCustomReflectionText] = useState<string>('');
   
   // Customization State
@@ -368,27 +358,12 @@ const App: React.FC = () => {
     }
   };
 
-  // ひとことドロップダウンの外部クリックで閉じる
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element;
-      if (!target.closest('.reflection-dropdown-container')) {
-        setShowReflectionDropdown(false);
-      }
-    };
-
-    if (showReflectionDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [showReflectionDropdown]);
 
   // Close dropdowns when clicking outside
   React.useEffect(() => {
     const handleClickOutside = () => {
       setShowFontDropdown(false);
       setShowColorDropdown(false);
-      setShowReflectionDropdown(false);
     };
     
     document.addEventListener('click', handleClickOutside);
@@ -1101,7 +1076,7 @@ const App: React.FC = () => {
                fontStyle={fontStyle}
                numberColor={numberColor}
                showReflection={showReflection}
-               reflectionAnswer={reflectionAnswer}
+               reflectionAnswer=""
                customReflectionText={customReflectionText}
              />
           </div>
@@ -1336,68 +1311,32 @@ const App: React.FC = () => {
                 <span>{isEditMode ? "編集中" : "編集"}</span>
              </button>
 
-             <div className="relative">
-               <button 
-                  onClick={() => setShowReflection(!showReflection)}
-                  className={`w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg border text-xs font-mono transition-colors ${showReflection ? 'bg-blue-100 border-blue-300 text-blue-900' : 'bg-gray-100 border-gray-300 text-gray-700 hover:text-gray-900'}`}
-                >
-                  <MessageSquare size={12} />
-                  {showReflection ? "ひとこと" : "ひとこと無し"}
-               </button>
-               {showReflection && (
-                 <div className="absolute top-full left-0 right-0 mt-1 z-50 reflection-dropdown-container">
-                   <button
-                     onClick={(e) => {
-                       e.stopPropagation();
-                       setShowReflectionDropdown(!showReflectionDropdown);
-                     }}
-                     className="w-full flex items-center justify-between p-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all"
-                   >
-                     <div className="flex items-center gap-3">
-                       <span className="text-sm font-medium text-gray-900">
-                         {reflectionAnswer ? (reflectionAnswer === 'custom' ? (customReflectionText || 'ひとこと') : REFLECTION_ANSWERS.find(a => a.id === reflectionAnswer)?.text.replace(/[⭐😊😐🎉😔✏️]/g, '').trim()) : 'ひとことを選択...'}
-                       </span>
-                     </div>
-                     <svg className={`w-4 h-4 text-gray-500 transition-transform ${showReflectionDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                     </svg>
-                   </button>
-                   {showReflectionDropdown && (
-                     <div className="mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-64 overflow-y-auto">
-                       {REFLECTION_ANSWERS.map(answer => (
-                         <button
-                           key={answer.id}
-                           onClick={() => {
-                             setReflectionAnswer(answer.id);
-                             // 全ての選択で即座に閉じる
-                             setShowReflectionDropdown(false);
-                           }}
-                           className={`w-full flex items-center gap-3 p-3 text-left hover:bg-gray-50 transition-colors ${reflectionAnswer === answer.id ? 'bg-blue-50 text-blue-900' : 'text-gray-700'}`}
-                         >
-                           <span className="text-sm font-medium">{answer.text.replace(/[⭐😊😐🎉😔✏️]/g, '').trim()}</span>
-                           {reflectionAnswer === answer.id && (
-                             <svg className="w-4 h-4 text-blue-600 ml-auto" fill="currentColor" viewBox="0 0 20 20">
-                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                             </svg>
-                           )}
-                         </button>
-                       ))}
-                     </div>
-                   )}
-                 </div>
-               )}
+             <div className="space-y-2">
+               <div className="flex items-center justify-between">
+                 <h3 className="text-[10px] font-bold uppercase text-zinc-700 tracking-wider">メモ</h3>
+                 <button 
+                   onClick={() => setShowReflection(!showReflection)}
+                   className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono transition-colors ${showReflection ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                 >
+                   <MessageSquare size={10} />
+                   {showReflection ? "ON" : "OFF"}
+                 </button>
+               </div>
                
-               {/* カスタム入力フィールド */}
-               {showReflection && reflectionAnswer === 'custom' && (
-                 <div className="mt-2 p-3 bg-white border border-gray-300 rounded-lg">
+               {showReflection && (
+                 <div className="bg-white border border-gray-300 rounded-lg p-3">
                    <textarea
-                     placeholder="ひとこと (例: 今日は充実していた&#13;&#10;明日も頑張ろう！)"
+                     placeholder="今日のひとこと (例: 目標達成できて嬉しい！)"
                      value={customReflectionText}
                      onChange={(e) => setCustomReflectionText(e.target.value)}
-                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-vertical min-h-[60px]"
-                     autoFocus
+                     className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white resize-none"
                      rows={3}
+                     maxLength={100}
                    />
+                   <div className="flex justify-between items-center mt-2 text-xs text-gray-500">
+                     <span>自由にメッセージを入力してください</span>
+                     <span>{customReflectionText.length}/100</span>
+                   </div>
                  </div>
                )}
              </div>

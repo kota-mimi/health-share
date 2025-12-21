@@ -108,15 +108,6 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
   
   const fonts = getFontClasses();
 
-  // Reflection answers mapping
-  const REFLECTION_ANSWERS = [
-    { id: 'yes-absolutely', text: 'Yes, absolutely! ⭐', emoji: '⭐' },
-    { id: 'pretty-good', text: 'Pretty good! 😊', emoji: '😊' },
-    { id: 'it-was-okay', text: 'It was okay 😐', emoji: '😐' },
-    { id: 'amazing-day', text: 'Amazing day! 🎉', emoji: '🎉' },
-    { id: 'not-really', text: 'Not really... 😔', emoji: '😔' },
-    { id: 'custom', text: 'カスタム入力...', emoji: '✏️' },
-  ];
 
   // Define styles based on mode (if no custom image)
   const effectiveIsDarkMode = isDarkMode;
@@ -342,10 +333,7 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
                 </div>
                 <div className="flex items-start">
                   <span className={`text-sm sm:text-base ${fonts.val} ${numColorClass} whitespace-pre-line`}>
-                    {reflectionAnswer === 'custom' 
-                      ? (customReflectionText || 'カスタム入力...') 
-                      : REFLECTION_ANSWERS.find(a => a.id === reflectionAnswer)?.text.replace(/[⭐😊😐🎉😔✏️]/g, '').trim()
-                    }
+                    {customReflectionText || 'メモなし'}
                   </span>
                 </div>
               </div>
