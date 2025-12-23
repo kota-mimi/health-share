@@ -212,9 +212,9 @@ const App: React.FC = () => {
               target: parseInt(decodedData.caloriesTarget) || 2100,
             },
             pfc: {
-              p: { current: parseFloat(decodedData.protein) || 0, target: 160, unit: 'g' },
-              f: { current: parseFloat(decodedData.fat) || 0, target: 65, unit: 'g' },
-              c: { current: parseFloat(decodedData.carbs) || 0, target: 240, unit: 'g' },
+              p: { current: parseFloat(decodedData.protein) || 0, target: parseInt(decodedData.proteinTarget) || 160, unit: 'g' },
+              f: { current: parseFloat(decodedData.fat) || 0, target: parseInt(decodedData.fatTarget) || 65, unit: 'g' },
+              c: { current: parseFloat(decodedData.carbs) || 0, target: parseInt(decodedData.carbsTarget) || 240, unit: 'g' },
             },
             exercise: {
               minutes: parseInt(decodedData.exerciseTime) || 0,
