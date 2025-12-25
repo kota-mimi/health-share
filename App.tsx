@@ -1250,8 +1250,7 @@ const App: React.FC = () => {
           <div className="grid grid-cols-2 gap-2">
              <button 
                 onClick={handleBgChange}
-                disabled={!!customImage}
-                className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg border text-xs font-mono transition-colors ${!!customImage ? 'opacity-50 cursor-not-allowed border-gray-300 text-gray-500' : 'bg-gray-100 border-gray-300 text-gray-700 hover:text-gray-900'}`}
+                className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg border text-xs font-mono transition-colors bg-gray-100 border-gray-300 text-gray-700 hover:text-gray-900`}
               >
                 {currentBg.isDark ? <Moon size={12} /> : <Sun size={12} />}
                 <span>テーマ</span>
